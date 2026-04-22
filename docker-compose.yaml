@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:14.22-alpine3.23
+    container_name: hive_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aditya
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: hive
+    ports:
+      - "5432:5432"
+    volumes:
+      - hive_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:8.4.2-alpine3.22
+    container_name: hive_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - hive_redis_data:/var/lib/redis/data
+
+volumes:
+  hive_postgres_data:
+  hive_redis_data:

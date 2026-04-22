@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+ 
+}
+
+enum Role{
+  OWNER
+  MEMBER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  displayName  String
+  passwordHash String
+  refreshToken String?
+  bio          String?
+  createdAt    DateTime @default(now())
+  workspaces   WorkspaceMember[]
+  messages     Message[]
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  members   WorkspaceMember[]
+  channels  Channel[]
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  role        Role      @default(MEMBER)
+  joinedAt    DateTime  @default(now())
+
+  userId      String
+  workspaceId String
+
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([userId, workspaceId])
+}
+
+model Channel {
+  id          String    @id @default(cuid())
+  name        String
+  createdAt   DateTime  @default(now())
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  messages    Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  userId    String
+  channelId String
+
+  user      User    @relation(fields: [userId], references: [id])
+  channel   Channel @relation(fields: [channelId], references: [id])
+}
+
+
+
+
