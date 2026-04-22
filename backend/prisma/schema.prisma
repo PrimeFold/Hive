@@ -20,14 +20,15 @@ enum Role{
 
 model User {
   id           String   @id @default(cuid())
+  email        String   @unique
   username     String   @unique
-  displayName  String
+  displayName  String?
   passwordHash String
-  refreshToken String?
   bio          String?
   createdAt    DateTime @default(now())
   workspaces   WorkspaceMember[]
   messages     Message[]
+  refreshToken RefreshToken[]
 }
 
 model Workspace {
@@ -74,6 +75,16 @@ model Message {
 
   user      User    @relation(fields: [userId], references: [id])
   channel   Channel @relation(fields: [channelId], references: [id])
+}
+
+model RefreshToken{
+  id String @id @default(cuid())
+  token String @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  userId String 
+  user User @relation(fields: [userId] , references: [id])
+
 }
 
 
