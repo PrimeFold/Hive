@@ -1,6 +1,6 @@
 # ⬡ HIVE
 
-> A real-time team communication platform. Workspaces, channels, and instant messaging — Discord-lite, built lean and fast.
+> Real-time team communication. Workspaces, channels, and instant messaging — built lean and fast.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-yellow)
 ![Stack](https://img.shields.io/badge/stack-NestJS%20%2B%20TypeScript-blue)
@@ -11,13 +11,13 @@
 
 ## What is Hive?
 
-Hive is a lightweight real-time chat application inspired by Discord. It won't have everything Discord has — no voice, no video — but it covers the core: **workspaces**, **channels**, and **instant messaging** over WebSockets.
+Hive is a real-time communication platform built around **workspaces** and **channels**. Teams and communities can create their own space, organize conversations, and communicate instantly — with a clean API and a WebSocket-powered messaging core.
 
 ---
 
 ## Features
 
-- **Workspaces** — Create isolated communities (like Discord servers). Invite members and manage roles.
+- **Workspaces** — Create isolated communities. Invite members and manage roles.
 - **Channels** — Organize conversations by topic within a workspace. Public or private.
 - **Real-time messaging** — WebSocket-powered chat with live delivery and typing indicators.
 - **Authentication** — JWT-based auth with access + refresh tokens. Register, login, logout.
