@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { prepareMessage } from './utils/message';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ const FRONTEND_URL = process.env.FRONTEND_URL;
 
 app.use(cors());
 app.use(helmet());
+
+app.use(cookieParser());
 
 const io = new Server(httpServer,{
     cors:{

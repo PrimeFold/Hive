@@ -127,8 +127,6 @@ export const getUser:Handler = async(req,res)=>{
         message:response.message,
         user:response.data
     })
-
-
 }
 
 

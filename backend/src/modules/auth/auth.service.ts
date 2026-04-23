@@ -4,6 +4,7 @@ import { redis } from "../../utils/redis";
 import jwt, { Secret } from "jsonwebtoken";
 import { AuthServiceResponse, UserPayload } from "../../types";
 import { LoginPayload } from "../../types";
+import { success } from "zod";
 
 const MAX_ATTEMPTS = 3;
 const BLOCK_TIME = 60 * 60;
@@ -135,4 +136,80 @@ export const login = async (
     return { success: false, message: "Login failed" };
   }
 };
+
+export const getRefreshTokenFromDB = async(userId:string)=>{
+  try {
+    const token = await prisma.refreshToken.findUnique({
+      where:{id:userId},
+      select:{
+        tokenHash:true
+      }
+    })
+
+    if(!token){
+      return {
+        success:false,
+        message:"token not found.."
+      }
+    }
+
+    return {
+      success:true,
+      message:"Found rf token",
+      data:token
+    }
+
+  } catch (error) {
+    return{
+      success:false,
+      message:"Internal Server Error"
+    }
+  }
+
+
+}
+
+export const deleteOldTokenFromDB = async(userId:string)=>{
+  try {
+    await prisma.refreshToken.delete({
+      where:{id:userId}
+    })
+
+    return {
+      success:true,
+      message:"Refresh token deleted.."
+    }
+
+  } catch (error) {
+    return {
+      success:false,
+      message:"Internal Server Error"
+    }
+  }
+}
+
+export const storeNewTokenInDB = async(newRefreshTokenHash:string,userId:string)=>{
+  const id = userId;
+  try {
+    await prisma.refreshToken.create({
+      data: {
+        userId:id,
+        tokenHash: newRefreshTokenHash,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    })
+    return {
+      success:true,
+      message:"Stored the refresh token in DB"
+    }
+  } catch (error) {
+    return{
+      success:false,
+      message:"Internal Server Error"
+    }
+  }
+
+}
+
+
 
