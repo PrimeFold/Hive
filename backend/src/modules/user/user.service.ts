@@ -1,30 +1,29 @@
 import { User } from "../../generated/prisma/browser";
 import prisma from "../../lib/prisma";
-import { NoDataReturnPayload, UserPayload, UserServiceResponse } from "../../types";
+import { NoDataReturnPayload, usernamePayload, UserPayload, UserServiceResponse } from "../../types";
 import bcrypt from 'bcrypt';
 
 
 export const updateUsername = async (
   username: string,
   userId: string
-): Promise<UserServiceResponse<UserPayload>> => {
+): Promise<UserServiceResponse<usernamePayload>> => {
   try {
     const user = await prisma.user.update({
       where: { id: userId },
       data: { username },
-      select: {
-        id: true,
+      select:{
         username: true,
-        email: true,
-        displayName: true,
-        bio: true,
+        
       },
     });
 
     return {
       success: true,
       message: "Username updated successfully",
-      data:user
+      data:{
+        username:user.username
+      }
     };
   } catch {
     return { success: false, message: "Internal Server Error" };
@@ -53,7 +52,11 @@ export const updateEmail = async (
     return {
       success: true,
       message: "Email updated successfully",
-      data: user,
+      data: {
+        ...user,
+        displayName:user.displayName ?? "",
+        bio:user.bio ?? ""
+      },
     };
   } catch {
     return { success: false, message: "Internal Server Error" };
@@ -100,3 +103,44 @@ export const deleteUser = async (
     return { success: false, message: "Internal Server Error" };
   }
 };
+
+export const getUser = async(userId:string):Promise<UserServiceResponse<UserPayload>> =>{
+
+  try {
+    const user = await prisma.user.findUnique({
+      where:{id:userId},
+      select:{
+        id:true,
+        username:true,
+        email:true,
+        displayName:true,
+        bio:true
+      }
+    })
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found"
+      };
+    }
+
+    return {
+      success:true,
+      message:"Fetched user details",
+      data:{
+        ...user,
+        displayName:user.displayName ?? "",
+        bio:user.bio ?? ""
+      }
+    }
+
+  } catch (error) {
+    return {
+      success:false,
+      message:"Internal Server Error"
+    }
+  }
+
+}
+

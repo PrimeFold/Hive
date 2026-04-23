@@ -79,7 +79,7 @@ model Message {
 
 model RefreshToken{
   id String @id @default(cuid())
-  token String @unique
+  tokenHash String @unique
   createdAt DateTime @default(now())
   expiresAt DateTime
   userId String 

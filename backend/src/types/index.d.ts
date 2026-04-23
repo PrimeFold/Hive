@@ -20,33 +20,30 @@ export type UserServiceResponse<T>=
     }
 
 
+
+
 type NoDataReturnPayload = {
   success:boolean,
   message:string
 }
 
+type usernamePayload = {
+  username:string
+}
 
 type LoginPayload={
   accessToken:string
   refreshToken:string
 }
 
-type SignupPayload = {
-  username: string,
-  email: string,
-  displayName: string,
 
-}
 
 type UserPayload = {
-  
-    id: string;
-    email: string;
-    username: string;
-    displayName: string;
-    bio: string | null;
-  
-  
+  id: string;
+  email: string;
+  username: string;
+  displayName: string;
+  bio?: string;
 };
 
 

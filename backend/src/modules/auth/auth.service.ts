@@ -2,7 +2,7 @@ import prisma from "../../lib/prisma";
 import bcrypt from "bcrypt";
 import { redis } from "../../utils/redis";
 import jwt, { Secret } from "jsonwebtoken";
-import { AuthServiceResponse, SignupPayload } from "../../types";
+import { AuthServiceResponse, UserPayload } from "../../types";
 import { LoginPayload } from "../../types";
 
 const MAX_ATTEMPTS = 3;
@@ -29,7 +29,7 @@ export const signup = async (data: {
   email: string;
   displayName: string;
   password: string;
-}): Promise<AuthServiceResponse<SignupPayload>>=> {
+}): Promise<AuthServiceResponse<UserPayload>>=> {
   try {
     const exists = await prisma.user.findUnique({
       where: { username: data.username },
@@ -57,10 +57,15 @@ export const signup = async (data: {
       },
     });
 
+
     return {
       success: true,
       message: "User created successfully",
-      data: user,
+      data: {
+        ...user,
+        displayName: user.displayName ?? "",
+        bio: user.bio ?? "",
+      },
     };
   } catch {
     return { success: false, message: "Signup failed" };
@@ -109,10 +114,12 @@ export const login = async (
       { expiresIn: "7d", issuer: "Hive" }
     );
 
+    const hashedRFT = await bcrypt.hash(refreshToken,10);
+
     await prisma.refreshToken.create({
       data: {
         userId: user.id,
-        token: refreshToken,
+        tokenHash: hashedRFT,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     });
