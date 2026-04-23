@@ -1,5 +1,5 @@
 # ⬡ HIVE
-
+##DISCLAIMER : This project is under active development. Not ready for use
 > Real-time team communication. Workspaces, channels, and instant messaging — built lean and fast.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-yellow)
