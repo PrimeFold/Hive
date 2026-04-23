@@ -2,26 +2,23 @@ import prisma from "../../lib/prisma";
 import bcrypt from "bcrypt";
 import { redis } from "../../utils/redis";
 import jwt, { Secret } from "jsonwebtoken";
-
-type ServiceResponse<T = undefined> =
-  | { success: true; message: string; data: T }
-  | { success: false; message: string };
+import { AuthServiceResponse, SignupPayload } from "../../types";
+import { LoginPayload } from "../../types";
 
 const MAX_ATTEMPTS = 3;
 const BLOCK_TIME = 60 * 60;
 
 // -------------------- HELPERS --------------------
 
-const fail = async (ip: string): Promise<ServiceResponse> => {
+const fail = async (ip: string):Promise<AuthServiceResponse<LoginPayload>> => {
   const newAttempts = await redis.incr(`failed:${ip}`);
 
   if (newAttempts === 1) {
     await redis.expire(`failed:${ip}`, BLOCK_TIME);
   }
-
   return {
     success: false,
-    message: "Too many failed attempts / invalid credentials",
+    message: "...",
   };
 };
 
@@ -32,7 +29,7 @@ export const signup = async (data: {
   email: string;
   displayName: string;
   password: string;
-}): Promise<ServiceResponse> => {
+}): Promise<AuthServiceResponse<SignupPayload>>=> {
   try {
     const exists = await prisma.user.findUnique({
       where: { username: data.username },
@@ -76,8 +73,7 @@ export const login = async (
   data: { email: string; password: string },
   ip: string
 ): Promise<
-  ServiceResponse<{ accessToken: string; refreshToken: string }>
-> => {
+  AuthServiceResponse<LoginPayload>> => {
   try {
     const attempts = Number(await redis.get(`failed:${ip}`)) || 0;
 
@@ -133,104 +129,3 @@ export const login = async (
   }
 };
 
-// -------------------- UPDATE USERNAME --------------------
-
-export const updateUsername = async (
-  username: string,
-  userId: string
-): Promise<ServiceResponse> => {
-  try {
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { username },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        displayName: true,
-        bio: true,
-      },
-    });
-
-    return {
-      success: true,
-      message: "Username updated successfully",
-      data: user,
-    };
-  } catch {
-    return { success: false, message: "Internal Server Error" };
-  }
-};
-
-// -------------------- UPDATE EMAIL --------------------
-
-export const updateEmail = async (
-  email: string,
-  userId: string
-): Promise<ServiceResponse> => {
-  try {
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { email },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        displayName: true,
-        bio: true,
-      },
-    });
-
-    return {
-      success: true,
-      message: "Email updated successfully",
-      data: user,
-    };
-  } catch {
-    return { success: false, message: "Internal Server Error" };
-  }
-};
-
-// -------------------- UPDATE PASSWORD --------------------
-
-export const updatePassword = async (
-  password: string,
-  userId: string
-): Promise<ServiceResponse> => {
-  try {
-    const hash = await bcrypt.hash(password, 10);
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { passwordHash: hash },
-    });
-
-    return {
-      success: true,
-      message: "Password updated successfully",
-      data: undefined,
-    };
-  } catch {
-    return { success: false, message: "Internal Server Error" };
-  }
-};
-
-// -------------------- DELETE USER --------------------
-
-export const deleteUser = async (
-  userId: string
-): Promise<ServiceResponse> => {
-  try {
-    await prisma.user.delete({
-      where: { id: userId },
-    });
-
-    return {
-      success: true,
-      message: "User deleted successfully",
-      data: undefined,
-    };
-  } catch {
-    return { success: false, message: "Internal Server Error" };
-  }
-};

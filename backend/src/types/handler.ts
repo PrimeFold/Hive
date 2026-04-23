@@ -1,5 +1,5 @@
 import { NextFunction, Response } from "express";
-import { AuthRequest } from "./index";
+import { Request } from "express";
 
-export type Handler = (req:AuthRequest,res:Response,next:NextFunction)=>Promise<any> | any;
+export type Handler = (req:Request,res:Response,next:NextFunction)=>Promise<any> | any;
 
