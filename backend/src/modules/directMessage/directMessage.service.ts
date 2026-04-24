@@ -16,9 +16,9 @@ export const createDirectMessage = async(senderId:string,content:string,convoId:
             },
             include:{sender:true}
         })
-        await redis.lpush(`message:${convoId}`,JSON.stringify(DirectMessage))
-        await redis.ltrim(`message:${convoId}`, 0, 49)
-        await redis.expire(`message:${convoId}`, 10*60) 
+        await redis.lpush(`direct-message:${convoId}`,JSON.stringify(DirectMessage))
+        await redis.ltrim(`direct-message:${convoId}`, 0, 39)
+        await redis.expire(`direct-message:${convoId}`, 10*60) 
 
         return {
             success:true,
@@ -37,21 +37,38 @@ export const createDirectMessage = async(senderId:string,content:string,convoId:
 
 export const getMessages = async(convoId:string)=>{
     try {
-        const messages = await prisma.directMessage.findMany({
-            where:{id:convoId}
-        })
+        const key = `direct-message:${convoId}`
+        const cached = await redis.lrange(key, 0, -1);
 
-        if(!messages){
+        if(cached && cached.length > 0){
             return{
-                success:false,
-                message:"No Messages found!",
-                data:messages
+                success:true,
+                message:"Messages fetched from cache",
+                data:cached.map((item:string)=>JSON.parse(item))
             }
         }
 
+        const messages = await prisma.directMessage.findMany({
+            where:{conversationId:convoId}
+        })
+
+        if(!messages || messages.length === 0){
+            return{
+                success:false,
+                message:"No Messages found!"
+            }
+        }
+
+        // Cache messages for future requests
+        for (const msg of messages) {
+            await redis.lpush(key, JSON.stringify(msg));
+        }
+        await redis.ltrim(key, 0, 39);  // Keep only last 40
+        await redis.expire(key, 10*60);
+
         return{
-            succes:true,
-            message:"Messages fetched..",
+            success:true,
+            message:"Messages fetched from database",
             data:messages
         }
 
