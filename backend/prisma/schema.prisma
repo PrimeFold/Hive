@@ -29,6 +29,9 @@ model User {
   workspaces   WorkspaceMember[]
   messages     Message[]
   refreshToken RefreshToken[]
+  conversationsAsOne Conversation[]  @relation("participantOne")
+  conversationsAsTwo Conversation[]  @relation("participantTwo")
+  directMessages     DirectMessage[]
 }
 
 model Workspace {
@@ -87,6 +90,30 @@ model RefreshToken{
 
 }
 
+model Conversation {
+  id           String          @id @default(cuid())
+  createdAt    DateTime        @default(now())
 
+  participantOneId String
+  participantTwoId String
 
+  participantOne   User         @relation("participantOne", fields: [participantOneId], references: [id])
+  participantTwo   User         @relation("participantTwo", fields: [participantTwoId], references: [id])
+
+  messages         DirectMessage[]
+  
+  @@unique([participantOneId, participantTwoId])
+}
+
+model DirectMessage {
+  id             String       @id @default(cuid())
+  content        String
+  createdAt      DateTime     @default(now())
+
+  conversationId String
+  senderId       String
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
+}
 
