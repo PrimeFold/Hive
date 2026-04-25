@@ -95,15 +95,21 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
 
         })
 
-        socket.on('typing_start',(channelId:string)=>{
+        socket.on('channel_typing_start',(channelId:string)=>{
             socket.to(`channel:${channelId}`).emit('user_typing',{
                 userId:socket.data.userId
             })
         })
 
 
+        socket.on('channel_typing_stop',(conversationId:string)=>{
+            socket.to(`conversation:${conversationId}`).emit('user_stop_typing',{
+                userId:socket.data.userId
+            })
+        })
+
         //----------------ONLINE MEMBERS----------------------
-        socket.on('get_online_members', async (workspaceId: string) => {
+        socket.on('online_members', async (workspaceId: string) => {
             const onlineMembers = await redis.smembers(`online:${workspaceId}`)
             socket.emit('online_members', onlineMembers)
         })
