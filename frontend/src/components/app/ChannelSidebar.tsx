@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { type Workspace, type Member, type DirectMessage, getMember, formatTime } from "@/data/dummy";
+//import { type Workspace, type Member, type DirectMessage, getMember, formatTime } from "@/data/dummy";
 import { Hash, Plus, Settings, Search } from "lucide-react";
 
 interface Props {
@@ -111,7 +111,7 @@ export function ChannelSidebar({
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
-                <Hash className="h-3.5 w-3.5 flex-shrink-0" />
+                <Hash className="h-3.5 w-3.5 shrink-0" />
                 {ch.name}
               </button>
             );

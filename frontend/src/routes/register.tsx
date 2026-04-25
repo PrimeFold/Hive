@@ -23,9 +23,8 @@ function RegisterPage() {
       return;
     }
     setLoading(true);
-    console.log("Register:", form);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
+    
+    
     toast.success("Account created successfully!");
     navigate({ to: "/app" });
   };

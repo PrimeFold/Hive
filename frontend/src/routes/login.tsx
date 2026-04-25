@@ -14,16 +14,15 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e:any) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
     setLoading(true);
-    console.log("Login:", { email, password });
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
+    
+
     navigate({ to: "/app" });
   };
 

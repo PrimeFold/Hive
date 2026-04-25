@@ -52,10 +52,12 @@ export type AuthServiceResponse<T> =
       success: true;
       message: string;
       data: T;
+      statusCode:number;
     }
   | {
       success: false;
       message: string;
+      statusCode:number;
     };
 
 
