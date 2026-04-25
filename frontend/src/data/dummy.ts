@@ -19,6 +19,12 @@ export interface Channel {
   messages: Message[];
 }
 
+export interface DirectMessage {
+  id: string;
+  userId: string;
+  messages: Message[];
+}
+
 export interface Workspace {
   id: string;
   name: string;
@@ -35,6 +41,31 @@ export const members: Member[] = [
 ];
 
 export const currentUser = members[0];
+
+export const friends: Member[] = [
+  members[1],
+  members[3],
+  members[4],
+];
+
+export const directMessages: DirectMessage[] = [
+  {
+    id: "d1",
+    userId: "u2",
+    messages: [
+      { id: "dm1", senderId: "u2", content: "Hey Sarah, are we still on for the sync?", timestamp: mins(25) },
+      { id: "dm2", senderId: "u1", content: "Yes! I’ll join in 5 minutes.", timestamp: mins(22) },
+    ],
+  },
+  {
+    id: "d2",
+    userId: "u4",
+    messages: [
+      { id: "dm3", senderId: "u4", content: "Can you review my latest UI branch?", timestamp: mins(68) },
+      { id: "dm4", senderId: "u1", content: "I’m looking now. Looks great so far.", timestamp: mins(65) },
+    ],
+  },
+];
 
 const now = new Date();
 const mins = (n: number) => new Date(now.getTime() - n * 60000);
