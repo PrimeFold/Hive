@@ -1,7 +1,7 @@
 import prisma from "../../../lib/prisma"
 import { redis } from "../../../utils/redis"
 
-export const getMessagesByID = async(channelId:string)=>{
+export const getMessagesByChannelID = async(channelId:string)=>{
     try {
 
         const key = `channel-message:${channelId}`

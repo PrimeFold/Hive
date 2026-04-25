@@ -1,10 +1,10 @@
 import { Handler } from "../../../types/handler";
 import * as MessageService from '../messages/messages.service'
 
-export const getMessagesByID : Handler= async(req,res)=>{
+export const getMessagesByChannelID : Handler= async(req,res)=>{
 
     const channelId = req.params.id;
-    const response = await MessageService.getMessagesByID(channelId as string);
+    const response = await MessageService.getMessagesByChannelID(channelId as string);
     if (!response.success) {
         return res.status(400).json({ message: response.message });
     }

@@ -5,8 +5,8 @@ import { router } from '../../utils/router';
 
 
 //Signup and Login Routes.
-router.post('/auth/signup', AuthController.signup as express.RequestHandler)
-router.post('/auth/login',authLimiter,AuthController.login as express.RequestHandler)
+router.post('/auth/signup', authLimiter, AuthController.signup as express.RequestHandler)
+router.post('/auth/login', authLimiter, AuthController.login as express.RequestHandler)
 
 //refresh token route
 router.post('/auth/refresh')
