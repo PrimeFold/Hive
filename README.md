@@ -3,7 +3,7 @@
 > Real-time team communication. Workspaces, channels, and instant messaging — built lean and fast.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-yellow)
-![Stack](https://img.shields.io/badge/stack-NestJS%20%2B%20TypeScript-blue)
+![Stack])
 ![DB](https://img.shields.io/badge/database-PostgreSQL-336791)
 ![WS](https://img.shields.io/badge/realtime-WebSockets-purple)
 
@@ -31,9 +31,9 @@ Hive is a real-time communication platform built around **workspaces** and **cha
 | Layer | Technology |
 |---|---|
 | Runtime | Node.js + TypeScript |
-| Framework | NestJS |
+| Framework | Express |
 | Database | PostgreSQL + TypeORM |
-| Real-time | Socket.IO via `@nestjs/websockets` |
+| Real-time | Socket.IO via `@express/websockets` |
 | Auth | JWT (access + refresh tokens), bcrypt |
 | Validation | class-validator + class-transformer |
 
@@ -47,32 +47,30 @@ src/
 │   ├── auth/               # login, register, token refresh
 │   │   ├── auth.controller.ts
 │   │   ├── auth.service.ts
-│   │   └── auth.module.ts
+│   │   
 │   ├── user/               # profile, preferences
 │   │   ├── user.controller.ts
 │   │   ├── user.service.ts
-│   │   └── user.module.ts
+│   │   
 │   ├── workspace/          # workspace CRUD + membership
 │   │   ├── workspace.controller.ts
 │   │   ├── workspace.service.ts
-│   │   └── workspace.module.ts
+│   │   
 │   ├── channel/            # channel CRUD
 │   │   ├── channel.controller.ts
 │   │   ├── channel.service.ts
-│   │   └── channel.module.ts
+│  
 │   ├── message/            # message persistence
 │   │   ├── message.controller.ts
 │   │   ├── message.service.ts
-│   │   └── message.module.ts
-│   └── gateway/            # Socket.IO event hub
-│       ├── gateway.gateway.ts
-│       └── gateway.module.ts
+│  
+│   
 ├── common/
 │   ├── guards/             # JWT guard, roles guard
 │   ├── decorators/         # @CurrentUser, @Roles
 │   └── filters/            # global exception filters
 ├── app.module.ts
-└── main.ts
+└── server.ts
 ```
 
 ---
