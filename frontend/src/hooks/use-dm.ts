@@ -2,14 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSocketContext } from '@/context/socket-context';
 import api from '@/lib/axios';
 
-type Message = {
-  id: string;
-  content: string;
-  senderId: string;
-  createdAt: string;
-  clientId?:string;
-  pending?:boolean;
-};
+import type { Message } from '@/types/message';
 
 export const useDM = (conversationId: string) => {
   const socket = useSocketContext();
@@ -33,7 +26,7 @@ export const useDM = (conversationId: string) => {
     socket.emit('join_conversation', conversationId);
   }, [socket, conversationId]);
 
-  // ------------------------LISTEN FOR NEW MESAGES----------
+  // ------------------------LISTEN FOR NEW MESAGES------------------------
   useEffect(() => {
     if (!socket) return;
 
@@ -47,6 +40,7 @@ export const useDM = (conversationId: string) => {
     };
 
     socket.on('new_dm', handleNewDM);
+    
 
     return () => {
       socket.off('new_dm', handleNewDM);
@@ -90,8 +84,20 @@ export const useDM = (conversationId: string) => {
       };
 
       setMessages(prev=>[...prev,tempMessage])
+      
+      socket.emit('send_dm', {conversationId, content,clientId});
 
-      socket.emit('send_dm', conversationId, content,clientId);
+      setTimeout(() => {
+        setMessages(prev =>
+          prev.map(m =>
+            m.clientId === clientId && m.pending
+              ? { ...m, pending: false, failed: true }
+              : m
+          )
+        );
+      }, 5000);
+
+      
 
     },
 

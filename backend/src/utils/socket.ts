@@ -59,14 +59,19 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
 
         socket.on('send_dm',  async(conversationId:string,content:string,clientId:string)=>{
             const senderId = socket.data.userId;
-            const message = await createDirectMessage(senderId as string,content,conversationId);
 
-
-
-            io.to(`conversation:${conversationId}`).emit('new_dm',{
-                message,
-                clientId
-            })
+            try {
+                const message = await createDirectMessage(senderId as string,content,conversationId);
+                io.to(`conversation:${conversationId}`).emit('new_dm',{
+                    message,
+                    clientId
+                })
+            } catch (error) {
+                io.to(`conversation:${conversationId}`).emit('message_failed',{
+                   clientId 
+                })
+            }
+            
 
         })
 

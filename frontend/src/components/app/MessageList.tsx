@@ -1,11 +1,17 @@
-import { type Message, getMember, formatTime } from "@/data/dummy";
+import { useDM } from "@/hooks/use-dm";
+import { Message } from "@/types/message";
 import { MoreHorizontal } from "lucide-react";
+import { formatTime } from "@/lib/utils";
+import { getMember } from "@/lib/get-member";
 
-interface Props {
-  messages: Message[];
+type Props={
+  messages:Message[];
 }
 
+
 export function MessageList({ messages }: Props) {
+
+
   return (
     <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
       {messages.map((msg, i) => {
@@ -20,19 +26,19 @@ export function MessageList({ messages }: Props) {
           >
             {!isGrouped ? (
               <div className={`flex gap-2.5 ${i > 0 ? "mt-3" : ""}`}>
-                <div className="w-9 h-9 rounded-full bg-secondary flex-shrink-0 flex items-center justify-center text-xs font-medium text-muted-foreground mt-0.5">
+                <div className="w-9 h-9 rounded-full bg-secondary shrink-0 flex items-center justify-center text-xs font-medium text-muted-foreground mt-0.5">
                   {sender.avatar}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2">
                     <span className="text-sm font-semibold text-foreground">{sender.displayName}</span>
-                    <span className="text-xs text-muted-foreground">{formatTime(msg.timestamp)}</span>
+                    <span className="text-xs text-muted-foreground">{formatTime(msg.createdAt)}</span>
                   </div>
                   <p className="text-sm text-foreground/85 leading-relaxed">{msg.content}</p>
                 </div>
               </div>
             ) : (
-              <div className="pl-[46px]">
+              <div className="pl-11.5">
                 <p className="text-sm text-foreground/85 leading-relaxed">{msg.content}</p>
               </div>
             )}
