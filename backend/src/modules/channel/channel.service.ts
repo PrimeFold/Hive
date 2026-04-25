@@ -58,7 +58,53 @@ export const getAllChannels = async(workspaceId:string)=>{
             statusCode:500
         }
     }
+}
+
+export const editChannelName = async(newName:string,channelId:string)=>{
+    try {
+        const renamedChannel = await prisma.channel.update({
+            where:{id:channelId},
+            data:{name:newName}
+        })
+
+        return {
+            success:true,
+            message:"Channel name updated successfully!",
+            data:renamedChannel,
+            statusCode:200
+        }
+
+    } catch (error) {
+        return {
+            success:false,
+            message:"Error updating channel name",
+            statusCode:500
+        }
+    }
 
 }
+
+export const deleteChannel = async(channelId:string)=>{
+    try {
+        await prisma.channel.delete({
+            where:{id:channelId}
+        })
+
+        return {
+            success:true,
+            message:"Channel deleted successfully!",
+            statusCode:200
+        }
+
+    } catch (error) {
+        return {
+            success:false,
+            message:"Error deleting channel",
+            statusCode:500
+        }
+    }
+
+}
+
 
 
