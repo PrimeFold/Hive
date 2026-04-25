@@ -1,12 +1,11 @@
 import express from 'express';
 import helmet from 'helmet';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { prepareMessage } from './utils/message';
 import cookieParser from 'cookie-parser';
 import { router } from './utils/router';
+import { setupSocket } from './utils/socket';
 
 dotenv.config();
 
@@ -21,24 +20,7 @@ app.use(helmet());
 app.use(cookieParser());
 app.use('/',router)
 
-const io = new Server(httpServer,{
-    cors:{
-        origin: FRONTEND_URL,
-        methods: ['GET', 'POST']
-    }
-})
-
-io.on("connection",(socket)=>{
-
-    socket.on('message',(data:{username:string,text:string})=>{
-        io.emit('message',prepareMessage(data));
-    })
-    
-    io.on('disconnect',()=>{
-        console.log(`User disconnected : ${socket.id}`)
-    })
-
-})
+setupSocket(httpServer, FRONTEND_URL as string);
 
 
 httpServer.listen(PORT,()=>{

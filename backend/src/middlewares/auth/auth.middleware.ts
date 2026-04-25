@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { verifyAccessToken } from '../../utils/jwt';
 import { AuthUser } from '../../types';
 import { Request } from 'express';
 
@@ -11,15 +11,14 @@ export const AuthMiddleware = async (req: Request, res: Response, next: NextFunc
             return res.status(401).json({ message: 'No token provided' });
         }
 
-        const token = authHeader.split(' ')[1]; 
+        const token = authHeader.split(' ')[1];
 
-        
-        const decoded = jwt.verify(token as string, process.env.JWT_SECRET as string);
+        const decoded = verifyAccessToken(token as string);
 
-        if(typeof decoded =='string'){
+        if (!decoded) {
             return res.status(401).json({
-                message:"Invalid token"
-            })
+                message: "Invalid token"
+            });
         }
         
         req.user = decoded as AuthUser;
