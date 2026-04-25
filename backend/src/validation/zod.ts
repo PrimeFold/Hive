@@ -24,6 +24,10 @@ export const channelSchema = z.object({
     name:z.string().min(4).max(25)
 })
 
+export const workspaceSchema = z.object({
+    name:z.string().min(3).max(50)
+})
+
 
 
 
