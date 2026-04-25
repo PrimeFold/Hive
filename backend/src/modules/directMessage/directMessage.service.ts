@@ -44,13 +44,15 @@ export const getMessages = async(convoId:string)=>{
             return{
                 success:true,
                 message:"Messages fetched from cache",
-                data:cached.map((item:string)=>JSON.parse(item)),
+                data:cached.map((item:string)=>JSON.parse(item)).reverse(),
                 statusCode: 200
             }
         }
 
         const messages = await prisma.directMessage.findMany({
-            where:{conversationId:convoId}
+            where:{conversationId:convoId},
+            orderBy:{createdAt:'asc'},
+            take:50
         })
 
         // Cache messages for future requests

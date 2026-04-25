@@ -9,9 +9,9 @@ declare module 'axios' {
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 export let accessToken: string | null = null;
 
-
 export const setAccessToken = ( token : string ) => accessToken = token;
 export const clearAccessToken = () => accessToken = null;
+export const getAccessToken = ()=> accessToken;
 
 const api = axios.create({
     baseURL:BASE_URL,
@@ -45,6 +45,7 @@ api.interceptors.response.use(
                 const newToken = response.data.accessToken;
                 originalRequest.headers.Authorization = `Bearer ${newToken}`
                 setAccessToken(newToken);
+                window.dispatchEvent(new Event('auth:token_refreshed'));
 
                 return api(originalRequest)
             } catch{

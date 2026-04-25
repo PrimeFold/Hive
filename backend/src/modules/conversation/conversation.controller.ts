@@ -1,6 +1,8 @@
 import { Handler } from "../../types/handler";
 import * as ConversationService from '../conversation/conversation.service'
 
+
+
 export const createConversation:Handler = async(req,res)=>{
     const currentUser = req.user?.id;
 
@@ -96,6 +98,4 @@ export const getConversationByID : Handler = async(req,res)=>{
     })
 
 }
-
-
 

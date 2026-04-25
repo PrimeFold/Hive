@@ -3,6 +3,8 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/auth-context";
+import SocketContext from "@/context/socket-context";
+import { useSocket } from "@/hooks/use-socket";
 
 function NotFoundComponent() {
   return (
@@ -79,13 +81,17 @@ function ThemedToaster() {
   );
 }
 
+const socket = useSocket();
+
 function RootComponent() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <Outlet />
-        <ThemedToaster />
-      </AuthProvider>
+      <SocketContext.Provider value={socket}>
+        <AuthProvider>
+          <Outlet />
+          <ThemedToaster />
+        </AuthProvider>
+      </SocketContext.Provider>
       
     </ThemeProvider>
   );

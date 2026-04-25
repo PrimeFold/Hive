@@ -31,7 +31,7 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
         console.log(`User connected: ${socket.id}, User ID: ${socket.data.userId}`);
 
 
-        //--------------USER JOINS WORKSPACE--------------------------
+        //--------------USER JOINS WORKSPACE---------------------
 
         socket.on('join_workspace',async(workspaceId:string)=>{
             socket.join(`workspace:${workspaceId}`)
@@ -50,19 +50,23 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
 
         
 
-        //-----------------------DIRECT MESSAGES--------------------------
+        //-----------------------DIRECT MESSAGES------------------------
 
         socket.on('join_conversation',(conversationId:string)=>{
-            socket.join(`conversation${conversationId}`)
+            socket.join(`conversation:${conversationId}`)
             console.log(`User ${socket.data.userId} joined conversation:${conversationId}`)
         })
 
-        socket.on('send_dm',  async(conversationId:string,content:string)=>{
+        socket.on('send_dm',  async(conversationId:string,content:string,clientId:string)=>{
             const senderId = socket.data.userId;
-
             const message = await createDirectMessage(senderId as string,content,conversationId);
 
-            io.to(`conversation:${conversationId}`).emit('new_dm',message)
+
+
+            io.to(`conversation:${conversationId}`).emit('new_dm',{
+                message,
+                clientId
+            })
 
         })
 
@@ -82,11 +86,14 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
         //----------------------CHANNEL MESSAGES---------------------------
 
         socket.on('join_channel',(channelId:string)=>{
-            socket.join(`channel${channelId}`)
+
+            socket.join(`channel:${channelId}`)
             console.log(`User ${socket.data.userId} joined channel:${channelId}`)
+
         })
 
         socket.on('send_channel_message',  async(channelId:string,content:string)=>{
+
             const senderId = socket.data.userId;
 
             const ChannelMessage = await createMessage(senderId as string,content,channelId);
@@ -102,8 +109,8 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
         })
 
 
-        socket.on('channel_typing_stop',(conversationId:string)=>{
-            socket.to(`conversation:${conversationId}`).emit('user_stop_typing',{
+        socket.on('channel_typing_stop',(channelId:string)=>{
+            socket.to(`channel:${channelId}`).emit('user_stop_typing',{
                 userId:socket.data.userId
             })
         })

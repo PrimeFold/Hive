@@ -13,10 +13,12 @@ export type UserServiceResponse<T>=
       success:true,
       message:string,
       data:T
+      statusCode:number;
     }
   | {
       success:false,
       message:string
+      statusCode:number;
     }
 
 
@@ -25,10 +27,12 @@ export type UserServiceResponse<T>=
 type NoDataReturnPayload = {
   success:boolean,
   message:string
+  statusCode:number;
 }
 
 type usernamePayload = {
   username:string
+
 }
 
 type LoginPayload={
