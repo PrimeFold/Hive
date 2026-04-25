@@ -2,7 +2,7 @@ import { Server } from 'socket.io';
 import { prepareMessage } from './message';
 import { verifyAccessToken } from './jwt';
 import { createDirectMessage } from '../modules/directMessage/directMessage.service';
-import { createMessage } from '../modules/directMessage/directMessage.controller';
+import { createMessage } from '../modules/channel/channelMessage/channelMessage.service';
 import { redis } from './redis';
 
 export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {

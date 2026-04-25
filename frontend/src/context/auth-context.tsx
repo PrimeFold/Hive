@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { setAccessToken, clearAccessToken as clearAxiosToken } from '@/lib/axios';
+import api, { setAccessToken, clearAccessToken as clearAxiosToken } from '@/lib/axios';
 
 // 1. Define what a 'User' looks like in Hive
 interface User {
@@ -8,7 +8,6 @@ interface User {
   username: string;
 }
 
-// 2. Define what our "Brain" can do
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -33,8 +32,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     clearAxiosToken();
     setUser(null);
-    // Note: You'll eventually call POST /auth/logout here
   };
+
+  useEffect(()=>{
+    const handleLogoutEvent = ()=>{
+      logout();
+    }
+
+    window.addEventListener('auth:logout',handleLogoutEvent);
+    return ()=> window.removeEventListener('auth:logout',handleLogoutEvent);
+  },[])
+
+  useEffect(()=>{
+
+    const checkExistingSession = async()=>{
+      try {
+        const {data} = await api.post('/auth/refresh')
+        
+        login(data.accessToken,data.user)
+
+      } catch (error) {
+        console.log("No active sessions found..")
+      }
+    }
+    checkExistingSession();
+
+  },[])
 
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
@@ -43,7 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// The "Hook" that components like Login/Register will use
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

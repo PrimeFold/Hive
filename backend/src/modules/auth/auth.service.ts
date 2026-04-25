@@ -221,5 +221,30 @@ export const storeNewTokenInDB = async(newRefreshTokenHash:string,userId:string)
 
 }
 
+export const getUser = async(userId:string)=>{
+  try {
+    const user = await prisma.user.findUnique({
+      where:{id:userId},
+      select:{
+        id:true,
+        username:true,
+        email:true
+      }
+    })
+    
+    return{
+      success:true,
+      message:"Fetched User",
+      statusCode:200,
+      data:user
+    }
 
+  } catch (error) {
+    return{
+      success:false,
+      message:"Internal Server Error",
+      statusCode:500
+    }
+  }
+}
 

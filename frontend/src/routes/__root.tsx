@@ -2,6 +2,7 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
+import { AuthProvider } from "@/context/auth-context";
 
 function NotFoundComponent() {
   return (
@@ -81,8 +82,11 @@ function ThemedToaster() {
 function RootComponent() {
   return (
     <ThemeProvider>
-      <Outlet />
-      <ThemedToaster />
+      <AuthProvider>
+        <Outlet />
+        <ThemedToaster />
+      </AuthProvider>
+      
     </ThemeProvider>
   );
 }

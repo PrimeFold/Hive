@@ -3,6 +3,9 @@ import { useState } from "react";
 import { Hexagon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useAuth } from "@/context/auth-context";
+import api from "@/lib/axios";
+import axios from "axios";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -13,6 +16,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e:any) => {
     e.preventDefault();
@@ -21,7 +25,21 @@ function LoginPage() {
       return;
     }
     setLoading(true);
-    
+
+    try {
+      const response = await api.post('/auth/login',{
+        email,
+        password
+      })
+
+      login(response.data.accessToken, response.data.user);
+      setLoading(false);
+    } catch (error : unknown) {
+      if(axios.isAxiosError(error)){
+        toast.error(error.response?.data?.message || "Invalid credentials");
+      }
+      toast.error("Something went wrong !")
+    }
 
     navigate({ to: "/app" });
   };

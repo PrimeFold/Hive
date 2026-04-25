@@ -1,7 +1,13 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http:localhost:3000'
-let accessToken: string | null = null;
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
+
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+export let accessToken: string | null = null;
 
 
 export const setAccessToken = ( token : string ) => accessToken = token;
@@ -28,7 +34,7 @@ api.interceptors.response.use(
     async(error)=>{
         const originalRequest = error.config
 
-        if(error.resopnse?.status === 401 && !originalRequest._retry){
+        if(error.response?.status === 401 && !originalRequest._retry){
             originalRequest._retry = true;
 
             try {

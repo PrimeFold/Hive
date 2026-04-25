@@ -64,6 +64,15 @@ export const generateRefreshToken:Handler = async(req,res)=>{
         })
     }
 
+    const userResponseData = await AuthService.getUser(userId);
+    if(!userResponseData.success){
+        const statusCode = userResponseData.statusCode || 500;
+        return res.status(statusCode).json({
+            message:userResponseData.message
+        })
+    }
+
+
     const CookieToken = req.cookies['refresh-token'] as string | undefined;
     const response = await AuthService.getRefreshTokenFromDB(userId);
     if(!response.success){
@@ -113,7 +122,7 @@ export const generateRefreshToken:Handler = async(req,res)=>{
             message:stored.message
         })
     }
-    return res.status(200).json({message:stored.message,accessToken:newAccessToken})
+    return res.status(200).json({message:stored.message,accessToken:newAccessToken,user:userResponseData.data})
 }
 
 
