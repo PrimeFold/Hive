@@ -12,3 +12,4 @@ export const verifyAccessToken = (token: string): JwtPayload | null => {
     return null
   }
 }
+

@@ -1,5 +1,7 @@
-import prisma from "../../lib/prisma"
-import { redis } from "../../utils/redis"
+import prisma from "../../../lib/prisma"
+import { redis } from "../../../utils/redis"
+
+
 
 
 export const createDirectMessage = async(senderId:string,content:string,convoId:string)=>{

@@ -1,5 +1,5 @@
-import { Handler } from "../../types/handler";
-import * as DirectMessageService from '../directMessage/directMessage.service'
+import { Handler } from "../../../types/handler";
+import * as DirectMessageService from './directMessage.service'
 
 export const createMessage:Handler = async(req,res)=>{
     
