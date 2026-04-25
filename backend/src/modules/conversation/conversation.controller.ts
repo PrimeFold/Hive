@@ -19,13 +19,14 @@ export const createConversation:Handler = async(req,res)=>{
     }
 
     const response = await ConversationService.createConversation(currentUser, targetUser);
+    const statusCode = response.statusCode || 500;
     if(!response.success){
-        return res.status(400).json({
+        return res.status(statusCode).json({
             message:response.message
         })
     }
 
-    return res.status(201).json({
+    return res.status(statusCode).json({
         message:response.message,
         data:response.data
     })
@@ -43,13 +44,14 @@ export const deleteConversation:Handler = async(req,res)=>{
     }
 
     const response = await ConversationService.deleteConversation(convoId as string);
+    const statusCode = response.statusCode || 500;
     if(!response.success){
-        return res.status(500).json({
+        return res.status(statusCode).json({
             message:response.message
         })
     }
 
-    return res.status(200).json({
+    return res.status(statusCode).json({
         message:response.message
     })
 
@@ -65,13 +67,14 @@ export const getAllConversations:Handler = async(req,res)=>{
     }
 
     const response = await ConversationService.getAllConversations(userId);
+    const statusCode = response.statusCode || 500;
     if(!response.success){
-        return res.status(500).json({
+        return res.status(statusCode).json({
             message:response.message
         })
     }
 
-    return res.status(200).json({
+    return res.status(statusCode).json({
         message:response.message,
         data:response.data
     })
@@ -81,13 +84,14 @@ export const getConversationByID : Handler = async(req,res)=>{
     const convoId = req.params.id;
     const response = await ConversationService.getConversationByID(convoId as string);
 
+    const statusCode = response.statusCode || 500;
     if(!response.success){
-        return res.status(404).json({
+        return res.status(statusCode).json({
             message:response.message
         })
     }
     
-    return res.status(200).json({
+    return res.status(statusCode).json({
         message:response.message
     })
 

@@ -12,7 +12,8 @@ export const getMessagesByChannelID = async(channelId:string)=>{
             return {
                 success:true,
                 message:"Fetched from cache",
-                data:cached.map((item:string)=>JSON.parse(item))
+                data:cached.map((item:string)=>JSON.parse(item)),
+                statusCode:200
             }
         }
 
@@ -21,13 +22,6 @@ export const getMessagesByChannelID = async(channelId:string)=>{
         const messages = await prisma.message.findMany({
             where:{channelId:channelId}
         })
-
-        if(!messages){
-            return {
-                success:false,
-                message:"No messages found !"
-            }
-        }
 
         console.log("CACHE MISS , HIT DB")
 
@@ -41,13 +35,15 @@ export const getMessagesByChannelID = async(channelId:string)=>{
         return {
             success:true,
             message:"Fetched messages",
-            data:messages
+            data:messages,
+            statusCode:200
         }
 
     } catch (error) {
         return {
             success:false,
-            message:"Internal Server Error"
+            message:"Internal Server Error",
+            statusCode:500
         }
     }
     
@@ -72,7 +68,8 @@ export const createMessage=async(userId:string,content:string,channelId:string)=
         return {
             success:true,
             message:"Message created",
-            data:newMessage
+            data:newMessage,
+            statusCode:201
         }
 
 
@@ -80,6 +77,7 @@ export const createMessage=async(userId:string,content:string,channelId:string)=
         return{
             success:false,
             message:"Error sending message",
+            statusCode:500
         }
     }
 

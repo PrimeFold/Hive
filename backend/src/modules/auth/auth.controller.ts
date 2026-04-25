@@ -13,11 +13,12 @@ export const signup:Handler = async(req,res)=>{
     
     const response = await AuthService.signup(result.data);
 
+    const statusCode = response.statusCode || 500;
     if(!response.success){
-        return res.status(400).json({message: response.message})
+        return res.status(statusCode).json({message: response.message})
     }
 
-    return res.status(201).json({message: response.message})
+    return res.status(statusCode).json({message: response.message})
 }
 
 export const login:Handler = async(req,res)=>{
@@ -34,6 +35,7 @@ export const login:Handler = async(req,res)=>{
     const response = await AuthService.login(data,ip);
     
     
+    const statusCode = response.statusCode || 500;
     if(response.success){
         const accessToken = response.data.accessToken;
 
@@ -44,11 +46,11 @@ export const login:Handler = async(req,res)=>{
             maxAge:7 * 24 * 60 * 60 * 1000,
         })
 
-        return res.status(200).json({message:response.message, token:accessToken })
+        return res.status(statusCode).json({message:response.message, token:accessToken })
 
     }else{
 
-        return res.status(401).json({message:response.message})
+        return res.status(statusCode).json({message:response.message})
     }
 
 }
@@ -65,7 +67,8 @@ export const generateRefreshToken:Handler = async(req,res)=>{
     const CookieToken = req.cookies['refresh-token'] as string | undefined;
     const response = await AuthService.getRefreshTokenFromDB(userId);
     if(!response.success){
-        return res.status(403).json({
+        const statusCode = response.statusCode || 500;
+        return res.status(statusCode).json({
             message:response.message
         })
     }

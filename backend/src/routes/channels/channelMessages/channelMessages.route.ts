@@ -1,9 +1,9 @@
-import { router } from "../../utils/router";
+import { router } from "../../../utils/router";
 
-import * as MessageController from '../../modules/conversation/messages/messages.controller'
-import * as DirectMessageController from '../../modules/directMessage/directMessage.controller'
-import { AuthMiddleware } from "../../middlewares/auth/auth.middleware";
-import { Limiter } from "../../lib/rateLimiter";
+import * as MessageController from '../../../modules/channel/channelMessage/channelMessages.controller'
+import * as DirectMessageController from '../../../modules/directMessage/directMessage.controller'
+import { AuthMiddleware } from "../../../middlewares/auth/auth.middleware";
+import { Limiter } from "../../../lib/rateLimiter";
 
 const messageLimiter = Limiter({
   windowMs: 15 * 60 * 1000,

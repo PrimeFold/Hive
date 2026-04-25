@@ -20,14 +20,15 @@ export const updateUsername:Handler = async(req,res)=>{
 
     const response = await UserService.updateUsername(userId,username);
 
+    const statusCode = response.statusCode || 500;
     if(response.success){
-        return res.status(200).json({
+        return res.status(statusCode).json({
             message:response.message,
             user:response.data
         })
     }else{
-        return res.status(500).json({
-            message:"Internal Server Error"
+        return res.status(statusCode).json({
+            message:response.message
         })
     }
 
@@ -50,14 +51,15 @@ export const updateEmail:Handler = async(req,res)=>{
 
     const response = await UserService.updateEmail(email,userId);
 
+    const statusCode = response.statusCode || 500;
     if(response.success){
-        return res.status(200).json({
+        return res.status(statusCode).json({
             message:response.message,
             user:response.data
         })
     }else{
-        return res.status(500).json({
-            message:"Internal Server Error"
+        return res.status(statusCode).json({
+            message:response.message
         })
     }
 
@@ -73,16 +75,17 @@ export const updatePassword:Handler = async(req,res)=>{
 
     const {password} = req.body;
 
-    const response = await UserService.updateUsername(password,userId);
+    const response = await UserService.updatePassword(password,userId);
 
+    const statusCode = response.statusCode || 500;
     if(response.success){
-        return res.status(200).json({
+        return res.status(statusCode).json({
             message:response.message,
             user:response.data
         })
     }else{
-        return res.status(500).json({
-            message:"Internal Server Error"
+        return res.status(statusCode).json({
+            message:response.message
         })
     }
 
@@ -98,12 +101,13 @@ export const deleteUser:Handler = async(req,res)=>{
     
     const response = await UserService.deleteUser(userId);
 
+    const statusCode = response.statusCode || 500;
     if(response.success){
-        return res.status(200).json({
+        return res.status(statusCode).json({
             message:response.message
         })
     }else{
-        return res.status(500).json({
+        return res.status(statusCode).json({
             message: response.message
         })
     }
@@ -117,13 +121,14 @@ export const getUser:Handler = async(req,res)=>{
     }
     const response = await UserService.getUser(userId);
     
+    const statusCode = response.statusCode || 500;
     if(!response.success){
-        return res.status(404).json({
+        return res.status(statusCode).json({
             message:response.message
         })
     }
 
-    return res.status(200).json({
+    return res.status(statusCode).json({
         message:response.message,
         user:response.data
     })

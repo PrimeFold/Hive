@@ -20,6 +20,7 @@ const fail = async (ip: string):Promise<AuthServiceResponse<LoginPayload>> => {
   return {
     success: false,
     message: "...",
+    statusCode: 401
   };
 };
 
@@ -37,7 +38,7 @@ export const signup = async (data: {
     });
 
     if (exists) {
-      return { success: false, message: "User already exists" };
+      return { success: false, message: "User already exists", statusCode: 400 };
     }
 
     const hashPass = await bcrypt.hash(data.password, 10);
@@ -67,9 +68,10 @@ export const signup = async (data: {
         displayName: user.displayName ?? "",
         bio: user.bio ?? "",
       },
+      statusCode: 201
     };
   } catch {
-    return { success: false, message: "Signup failed" };
+    return { success: false, message: "Signup failed", statusCode: 500 };
   }
 };
 
@@ -84,21 +86,21 @@ export const login = async (
     const attempts = Number(await redis.get(`failed:${ip}`)) || 0;
 
     if (attempts >= MAX_ATTEMPTS) {
-      return { success: false, message: "Too many attempts. Try later." };
+      return { success: false, message: "Too many attempts. Try later.", statusCode: 429 };
     }
 
     const user = await prisma.user.findUnique({
       where: { email: data.email },
     });
 
-    if (!user) return fail(ip);
+    if (!user) return { ...fail(ip), statusCode: 401 };
 
     const isValid = await bcrypt.compare(
       data.password,
       user.passwordHash
     );
 
-    if (!isValid) return fail(ip);
+    if (!isValid) return { ...fail(ip), statusCode: 401 };
 
     const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as Secret;
     const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as Secret;
@@ -131,9 +133,10 @@ export const login = async (
       success: true,
       message: "Login successful",
       data: { accessToken, refreshToken },
+      statusCode: 200
     };
   } catch {
-    return { success: false, message: "Login failed" };
+    return { success: false, message: "Login failed", statusCode: 500 };
   }
 };
 
@@ -149,20 +152,23 @@ export const getRefreshTokenFromDB = async(userId:string)=>{
     if(!token){
       return {
         success:false,
-        message:"token not found.."
+        message:"token not found..",
+        statusCode:404
       }
     }
 
     return {
       success:true,
       message:"Found rf token",
-      data:token
+      data:token,
+      statusCode:200
     }
 
   } catch (error) {
     return{
       success:false,
-      message:"Internal Server Error"
+      message:"Internal Server Error",
+      statusCode:500
     }
   }
 
@@ -177,13 +183,15 @@ export const deleteOldTokenFromDB = async(userId:string)=>{
 
     return {
       success:true,
-      message:"Refresh token deleted.."
+      message:"Refresh token deleted..",
+      statusCode:200
     }
 
   } catch (error) {
     return {
       success:false,
-      message:"Internal Server Error"
+      message:"Internal Server Error",
+      statusCode:500
     }
   }
 }
@@ -200,12 +208,14 @@ export const storeNewTokenInDB = async(newRefreshTokenHash:string,userId:string)
     })
     return {
       success:true,
-      message:"Stored the refresh token in DB"
+      message:"Stored the refresh token in DB",
+      statusCode:200
     }
   } catch (error) {
     return{
       success:false,
-      message:"Internal Server Error"
+      message:"Internal Server Error",
+      statusCode:500
     }
   }
 

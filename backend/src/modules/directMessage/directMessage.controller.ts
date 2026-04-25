@@ -15,13 +15,14 @@ export const createMessage:Handler = async(req,res)=>{
     const convoId = req.params.id;
 
     const response = await DirectMessageService.createDirectMessage(senderId , content , convoId as string);
+    const statusCode = response.statusCode || 500;
     if(!response.success){
-        return res.status(500).json({
+        return res.status(statusCode).json({
             message:response.message
         })
     }
 
-    return res.status(201).json({
+    return res.status(statusCode).json({
         message:response.message,
         data:response.data
     })
@@ -39,14 +40,16 @@ export const getMessages:Handler=async(req,res)=>{
     }
 
     const response = await DirectMessageService.getMessages(convoId as string)
+    const statusCode = response.statusCode || 500;
     if(!response.success){
-        return res.status(500).json({
+        return res.status(statusCode).json({
             message:response.message
         })
     }
 
-    return res.status(200).json({
-        message:response.message
+    return res.status(statusCode).json({
+        message:response.message,
+        data:response.data
     })
 
 }

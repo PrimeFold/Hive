@@ -13,13 +13,16 @@ export const loginSchema = z.object({
 })
 
 export const usernameSchema = z.object({
-    username:z.string().min(3).max(30)
+    username:z.string().min(3).max(25)
 })
 
 export const emailSchema = z.object({
     email:z.email()
 })
 
+export const channelSchema = z.object({
+    name:z.string().min(4).max(25)
+})
 
 
 

@@ -17,7 +17,8 @@ export const createConversation = async(currentUserId:string,targetId:string)=>{
             return {
                 success: true,
                 message: "Conversation already exists",
-                data: existing
+                data: existing,
+                statusCode: 200
             };
         }
 
@@ -32,13 +33,15 @@ export const createConversation = async(currentUserId:string,targetId:string)=>{
         return {
             success:true,
             message:"Conversation created successfully!",
-            data:DM
+            data:DM,
+            statusCode: 201
         }
 
     } catch (error) {
         return {
             success:false,
-            message:"Internal Server Error"
+            message:"Internal Server Error",
+            statusCode: 500
         }
     }
 
@@ -55,7 +58,8 @@ export const deleteConversation = async(convoId:string)=>{
         if(!existing){
             return {
                 success:false,
-                message:"Conversation Does not exist"
+                message:"Conversation Does not exist",
+                statusCode: 404
             }
         }
 
@@ -65,7 +69,8 @@ export const deleteConversation = async(convoId:string)=>{
 
         return{
             success:true,
-            message:"Conversation Deleted successfully"
+            message:"Conversation Deleted successfully",
+            statusCode: 200
         }
 
 
@@ -73,7 +78,8 @@ export const deleteConversation = async(convoId:string)=>{
         
         return{
             success:false,
-            message:"Internal Server Error"
+            message:"Internal Server Error",
+            statusCode: 500
         }
 
     }
@@ -93,23 +99,18 @@ export const getAllConversations = async(userId:string)=>{
             }
         })
 
-        if(!list){
-            return {
-                success:false,
-                message:"No Conversations found .."
-            }
-        }
-
         return{
             success:true,
             message:"Successfully fetched all conversations..",
-            data:list
+            data:list,
+            statusCode: 200
         }
 
     } catch (error) {
         return {
             success:false,
-            message:"Internal Server error.."
+            message:"Internal Server error..",
+            statusCode: 500
         }
     }
 }
@@ -130,20 +131,23 @@ export const getConversationByID = async(convoId:string)=>{
         if(!conversation){
             return {
                 success:false,
-                message:"Conversation Does not exist"
+                message:"Conversation Does not exist",
+                statusCode: 404
             }
         }
 
         return{
             success:true,
             message:"fetched the conversation",
-            data:conversation
+            data:conversation,
+            statusCode: 200
         }
 
     } catch (error) {
         return {
             success:false,
-            message:"Internal Server error.."
+            message:"Internal Server error..",
+            statusCode: 500
         }
     }
 }

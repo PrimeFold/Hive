@@ -23,13 +23,15 @@ export const createDirectMessage = async(senderId:string,content:string,convoId:
         return {
             success:true,
             message:"Message sent..",
-            data:DirectMessage
+            data:DirectMessage,
+            statusCode: 201
         }
         
     } catch (error) {
         return {
             success:false,
-            message:"Internal Server Error"
+            message:"Internal Server Error",
+            statusCode: 500
         }
     }
 
@@ -44,20 +46,14 @@ export const getMessages = async(convoId:string)=>{
             return{
                 success:true,
                 message:"Messages fetched from cache",
-                data:cached.map((item:string)=>JSON.parse(item))
+                data:cached.map((item:string)=>JSON.parse(item)),
+                statusCode: 200
             }
         }
 
         const messages = await prisma.directMessage.findMany({
             where:{conversationId:convoId}
         })
-
-        if(!messages || messages.length === 0){
-            return{
-                success:false,
-                message:"No Messages found!"
-            }
-        }
 
         // Cache messages for future requests
         for (const msg of messages) {
@@ -69,13 +65,15 @@ export const getMessages = async(convoId:string)=>{
         return{
             success:true,
             message:"Messages fetched from database",
-            data:messages
+            data:messages,
+            statusCode: 200
         }
 
     } catch (error) {
         return{
             success:false,
-            message:"Internal Server Error.."
+            message:"Internal Server Error..",
+            statusCode: 500
         }
     }
     

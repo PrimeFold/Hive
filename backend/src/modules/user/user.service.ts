@@ -23,10 +23,11 @@ export const updateUsername = async (
       message: "Username updated successfully",
       data:{
         username:user.username
-      }
+      },
+      statusCode: 200
     };
   } catch {
-    return { success: false, message: "Internal Server Error" };
+    return { success: false, message: "Internal Server Error", statusCode: 500 };
   }
 };
 
@@ -57,9 +58,10 @@ export const updateEmail = async (
         displayName:user.displayName ?? "",
         bio:user.bio ?? ""
       },
+      statusCode: 200
     };
   } catch {
-    return { success: false, message: "Internal Server Error" };
+    return { success: false, message: "Internal Server Error", statusCode: 500 };
   }
 };
 
@@ -78,10 +80,11 @@ export const updatePassword = async (
 
     return {
       success: true,
-      message: "Password updated successfully"
+      message: "Password updated successfully",
+      statusCode: 200
     };
   } catch {
-    return { success: false, message: "Internal Server Error" };
+    return { success: false, message: "Internal Server Error", statusCode: 500 };
   }
 };
 
@@ -97,10 +100,11 @@ export const deleteUser = async (
 
     return {
       success: true,
-      message: "User deleted successfully"
+      message: "User deleted successfully",
+      statusCode: 200
     };
   } catch {
-    return { success: false, message: "Internal Server Error" };
+    return { success: false, message: "Internal Server Error", statusCode: 500 };
   }
 };
 
@@ -121,7 +125,8 @@ export const getUser = async(userId:string):Promise<UserServiceResponse<UserPayl
     if (!user) {
       return {
         success: false,
-        message: "User not found"
+        message: "User not found",
+        statusCode: 404
       };
     }
 
@@ -132,13 +137,15 @@ export const getUser = async(userId:string):Promise<UserServiceResponse<UserPayl
         ...user,
         displayName:user.displayName ?? "",
         bio:user.bio ?? ""
-      }
+      },
+      statusCode: 200
     }
 
   } catch (error) {
     return {
       success:false,
-      message:"Internal Server Error"
+      message:"Internal Server Error",
+      statusCode: 500
     }
   }
 
