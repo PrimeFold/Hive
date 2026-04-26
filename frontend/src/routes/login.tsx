@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Hexagon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/context/auth-context";
 import api from "@/lib/axios";
 import axios from "axios";
@@ -14,34 +15,33 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleSubmit = async (e:any) => {
+  const mutation = useMutation({
+    mutationFn: (credentials: { email: string; password: string }) => {
+      return api.post("/auth/login", credentials);
+    },
+    onSuccess: (response) => {
+      login(response.data.accessToken, response.data.user);
+      navigate({ to: "/app" });
+    },
+    onError: (error: unknown) => {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Invalid credentials");
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
-    setLoading(true);
-
-    try {
-      const response = await api.post('/auth/login',{
-        email,
-        password
-      })
-
-      login(response.data.accessToken, response.data.user);
-      setLoading(false);
-    } catch (error : unknown) {
-      if(axios.isAxiosError(error)){
-        toast.error(error.response?.data?.message || "Invalid credentials");
-      }
-      toast.error("Something went wrong !")
-    }
-
-    navigate({ to: "/app" });
+    mutation.mutate({ email, password });
   };
 
   return (
@@ -82,10 +82,10 @@ function LoginPage() {
             </div>
             <button
               type="submit"
-              disabled={loading}
+              disabled={mutation.isPending}
               className="w-full py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Sign in
             </button>
           </form>

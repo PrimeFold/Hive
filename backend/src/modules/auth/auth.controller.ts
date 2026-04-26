@@ -18,7 +18,7 @@ export const signup:Handler = async(req,res)=>{
         return res.status(statusCode).json({message: response.message})
     }
 
-    return res.status(statusCode).json({message: response.message})
+    return res.status(statusCode).json({message: response.message, user: response.data})
 }
 
 export const login:Handler = async(req,res)=>{
@@ -154,7 +154,3 @@ export const generateRefreshToken:Handler = async(req,res)=>{
     })
     return res.status(200).json({message:stored.message,accessToken:newAccessToken,user:userResponseData.data})
 }
-
-
-
-

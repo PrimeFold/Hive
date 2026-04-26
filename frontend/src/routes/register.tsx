@@ -3,6 +3,9 @@ import { useState } from "react";
 import { Hexagon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useMutation } from "@tanstack/react-query";
+import api from "@/lib/axios";
+import axios from "axios";
 
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
@@ -10,23 +13,35 @@ export const Route = createFileRoute("/register")({
 
 function RegisterPage() {
   const [form, setForm] = useState({ username: "", email: "", displayName: "", password: "" });
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const update = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const mutation = useMutation({
+    mutationFn: (formData: typeof form) => {
+      return api.post("/auth/signup", formData);
+    },
+    onSuccess: () => {
+      toast.success("Account created successfully! Please sign in.");
+      navigate({ to: "/login" });
+    },
+    onError: (error: unknown) => {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || "Registration failed. Please try again.");
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.username || !form.email || !form.displayName || !form.password) {
       toast.error("Please fill in all fields");
       return;
     }
-    setLoading(true);
-    
-    
-    toast.success("Account created successfully!");
-    navigate({ to: "/app" });
+    mutation.mutate(form);
   };
 
   const fields = [
@@ -66,10 +81,10 @@ function RegisterPage() {
             ))}
             <button
               type="submit"
-              disabled={loading}
+              disabled={mutation.isPending}
               className="w-full py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Create account
             </button>
           </form>
