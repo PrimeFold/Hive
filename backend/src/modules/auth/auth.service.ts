@@ -168,6 +168,8 @@ export const getRefreshTokenFromDB = async(userId:string)=>{
         statusCode:404
       }
     }
+    console.log("JWT_SECRET:", process.env.JWT_ACCESS_SECRET);
+    console.log("JWT_REFRESH_SECRET:", process.env.JWT_REFRESH_SECRET);
 
     return {
       success:true,
