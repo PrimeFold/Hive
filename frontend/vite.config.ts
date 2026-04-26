@@ -1,7 +1,14 @@
-import { defineConfig } from '@tanstack/start/config'
+
+
+import { defineConfig } from "vite"
+import react from "@vitejs/plugin-react"
+import path from "path"
 
 export default defineConfig({
-  server: {
-    preset: 'vercel'
-  }
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 })
