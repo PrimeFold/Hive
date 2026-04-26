@@ -128,10 +128,22 @@ export const login = async (
 
     await redis.del(`failed:${ip}`);
 
+    const userPayload: UserPayload = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      displayName: user.displayName ?? "",
+      bio: user.bio ?? "",
+    };
+
     return {
       success: true,
       message: "Login successful",
-      data: { accessToken, refreshToken },
+      data: {
+        accessToken,
+        refreshToken,
+        user: userPayload,
+      },
       statusCode: 200
     };
   } catch(error) {
@@ -229,15 +241,27 @@ export const getUser = async(userId:string)=>{
       select:{
         id:true,
         username:true,
-        email:true
+        email:true,
+        displayName: true,
+        bio: true,
       }
     })
+
+    if (!user) {
+      return { success: false, message: "User not found", statusCode: 404 };
+    }
+
+    const userPayload: UserPayload = {
+      ...user,
+      displayName: user.displayName ?? "",
+      bio: user.bio ?? "",
+    };
     
     return{
       success:true,
       message:"Fetched User",
       statusCode:200,
-      data:user
+      data:userPayload
     }
 
   } catch (error) {
@@ -248,4 +272,3 @@ export const getUser = async(userId:string)=>{
     }
   }
 }
-

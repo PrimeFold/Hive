@@ -38,6 +38,7 @@ type usernamePayload = {
 type LoginPayload={
   accessToken:string
   refreshToken:string
+  user: UserPayload;
 }
 
 
@@ -63,8 +64,3 @@ export type AuthServiceResponse<T> =
       message: string;
       statusCode:number;
     };
-
-
-
-
-

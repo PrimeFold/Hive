@@ -36,25 +36,18 @@ export const login:Handler = async(req,res)=>{
     
     
     const statusCode = response.statusCode || 500;
-    if(response.success){
-        const accessToken = response.data.accessToken;
-        const decodedAccess = jwt.decode(accessToken) as { id?: string } | null;
-        const userId = decodedAccess?.id;
-        const userResponse = userId ? await AuthService.getUser(userId) : null;
+    if(response.success && response.data){
+        const { accessToken, refreshToken, user } = response.data;
         const sameSite: 'none' | 'strict' = process.env.NODE_ENV === 'production' ? 'none' : 'strict';
 
-        res.cookie('refresh-token',response.data.refreshToken,{
+        res.cookie('refresh-token', refreshToken,{
             httpOnly:true,
             secure:process.env.NODE_ENV ==='production',
             sameSite,
             maxAge:7 * 24 * 60 * 60 * 1000,
         })
 
-        return res.status(statusCode).json({
-            message:response.message,
-            accessToken,
-            user: userResponse?.success ? userResponse.data : null
-        })
+        return res.status(statusCode).json({ message: response.message, accessToken, user });
 
     }else{
 
