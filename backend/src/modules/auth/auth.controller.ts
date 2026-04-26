@@ -57,12 +57,15 @@ export const login:Handler = async(req,res)=>{
 }
 
 export const generateRefreshToken:Handler = async(req,res)=>{
+    console.log("🔥 /auth/refresh HIT");
     const CookieToken = req.cookies['refresh-token'] as string | undefined;
     if(!CookieToken){
       return res.status(403).json({
           message:"Forbidden.."
       })
     }
+    console.log("JWT_SECRET:", process.env.JWT_ACCESS_SECRET);
+    console.log("JWT_REFRESH_SECRET:", process.env.JWT_REFRESH_SECRET);
 
     let decoded: { userId?: string; id?: string };
     try {
