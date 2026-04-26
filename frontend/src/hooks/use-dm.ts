@@ -1,64 +1,80 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSocketContext } from '@/context/socket-context';
 import api from '@/lib/axios';
-
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Message } from '@/types/message';
 
 export const useDM = (conversationId: string) => {
+  const queryClient = useQueryClient();
   const socket = useSocketContext();
-  const [messages, setMessages] = useState<Message[]>([]);
+  
+  // 1. Defining the Key and typing the Query
+  const queryKey = ['messages', conversationId];
+
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
-  // 1) Load initial history (HTTP)
-  useEffect(() => {
-    if (!conversationId) return;
+  // 2. Fetching with Generics 
+  const { data: messages = [], isLoading } = useQuery<Message[]>({
+    queryKey,
+    queryFn: async () => {
+      const res = await api.get<Message[]>(`/conversations/${conversationId}/messages`);
+      return res.data;
+    },
+    enabled: !!conversationId,
+  });
 
-    (async () => {
-      const res = await api.get(`/conversations/${conversationId}/messages`);
-      setMessages(res.data);
-    })();
-  }, [conversationId]);
-
-  // -----------------------JOIN ROOM-----------------------------
+  // ----------------------- JOIN ROOM -----------------------------
   useEffect(() => {
     if (!socket || !conversationId) return;
-
     socket.emit('join_conversation', conversationId);
   }, [socket, conversationId]);
 
-  // ------------------------LISTEN FOR NEW MESAGES------------------------
+  // ------------------ LISTEN FOR NEW MESSAGES --------------------
   useEffect(() => {
     if (!socket) return;
 
     const handleNewDM = (msg: Message) => {
-      setMessages(prev => {
-        const tempExists = prev.find(m=> m.clientId === msg.clientId);
-        // guard against duplicates
-        if (prev.some(m => m.id === msg.id)) return prev;
-        return [...prev, msg];
+      // Use setQueryData (Single) not setQueriesData (Bulk)
+      queryClient.setQueryData<Message[]>(queryKey, (old) => {
+        const prevMessages = old || [];
+
+        // Guard against duplicates from database
+        if (prevMessages.some((m) => m.id === msg.id)) {
+          return prevMessages;
+        }
+
+        // Swap optimistic message if it exists
+        const optimisticIndex = prevMessages.findIndex(
+          (m) => m.clientId === msg.clientId
+        );
+
+        if (optimisticIndex !== -1) {
+          const updatedMessages = [...prevMessages];
+          updatedMessages[optimisticIndex] = {
+            ...msg,
+            pending: false, // Confirmed by server
+          };
+          return updatedMessages;
+        }
+
+        return [...prevMessages, msg];
       });
     };
 
     socket.on('new_dm', handleNewDM);
-    
-
     return () => {
       socket.off('new_dm', handleNewDM);
     };
-  }, [socket]);
+  }, [socket, queryClient, queryKey]);
 
-  //  Typing indicators
+  // --- Typing indicators ---
   useEffect(() => {
     if (!socket) return;
-
     const onTyping = ({ userId }: { userId: string }) => {
-      setTypingUsers((prev) =>
-        prev.includes(userId) ? prev : [...prev, userId]
-      );
+      setTypingUsers((prev) => (prev.includes(userId) ? prev : [...prev, userId]));
     };
-
     const onStop = ({ userId }: { userId: string }) => {
-      setTypingUsers((prev) => prev.filter(id => id !== userId));
+      setTypingUsers((prev) => prev.filter((id) => id !== userId));
     };
 
     socket.on('user_typing', onTyping);
@@ -70,46 +86,34 @@ export const useDM = (conversationId: string) => {
     };
   }, [socket]);
 
-  //  Send message
-  const sendMessage = useCallback((content: string) => {
+  // 3. Send Message with Corrected setQueryData
+  const sendMessage = useCallback(
+    (content: string) => {
       if (!socket || !conversationId || !content.trim()) return;
-      
+
       const clientId = crypto.randomUUID();
-      const tempMessage = {
-        id: clientId ,
+      const tempMessage: Message = {
+        id: clientId, // Temporary ID
         content,
         senderId: 'me',
         createdAt: new Date().toISOString(),
-        pending: true, 
+        pending: true,
+        clientId, 
       };
 
-      setMessages(prev=>[...prev,tempMessage])
-      
-      socket.emit('send_dm', {conversationId, content,clientId});
+      // Push to TanStack Cache optimistically
+      queryClient.setQueryData<Message[]>(queryKey, (old) => {
+        return [...(old || []), tempMessage];
+      });
 
-      setTimeout(() => {
-        setMessages(prev =>
-          prev.map(m =>
-            m.clientId === clientId && m.pending
-              ? { ...m, pending: false, failed: true }
-              : m
-          )
-        );
-      }, 5000);
-
-      
-
+      socket.emit('send_dm', { conversationId, content, clientId });
     },
-
-
-
-    [socket, conversationId]
+    [socket, conversationId, queryClient, queryKey]
   );
 
-  //  Emit typing
+  // --- Emit typing ---
   const typing = useCallback(() => {
     if (!socket || !conversationId) return;
-
     socket.emit('typing_start', conversationId);
 
     const t = setTimeout(() => {
@@ -120,9 +124,10 @@ export const useDM = (conversationId: string) => {
   }, [socket, conversationId]);
 
   return {
-    messages,
+    messages, 
     sendMessage,
     typing,
     typingUsers,
+    isLoading,
   };
 };

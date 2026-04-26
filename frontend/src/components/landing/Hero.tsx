@@ -1,15 +1,33 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, ImageIcon } from "lucide-react";
+import ColorBends from "./ColorBends";
+
+// Amber palette derived from --primary oklch(0.78 0.16 65) — warm peach/amber tones
+const HIVE_BENDS_COLORS = ["#f5b06a", "#ff8a47", "#d76a3a", "#7a3a1f", "#1a1208"];
 
 export function Hero() {
   return (
     <section className="relative pt-28 pb-8 px-6 overflow-hidden">
-      {/* Ambient glow effects */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] pointer-events-none">
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/8 rounded-full blur-[120px]" />
-        <div className="absolute top-40 left-1/3 w-[200px] h-[200px] bg-primary/5 rounded-full blur-[80px]" />
+      {/* WebGL ColorBends background — themed to amber palette */}
+      <div className="absolute inset-0 pointer-events-none opacity-50 dark:opacity-60">
+        <ColorBends
+          colors={HIVE_BENDS_COLORS}
+          speed={0.15}
+          scale={1.2}
+          frequency={1}
+          warpStrength={0.9}
+          intensity={1.2}
+          bandWidth={5}
+          autoRotate={2}
+          mouseInfluence={0.6}
+          parallax={0.4}
+          noise={0.08}
+          iterations={2}
+        />
       </div>
+      {/* Soften the bends behind text */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background pointer-events-none" />
 
       {/* Grid pattern overlay */}
       <div

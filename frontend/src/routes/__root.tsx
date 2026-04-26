@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
@@ -17,9 +18,8 @@ function NotFoundComponent() {
         </p>
         <div className="mt-6">
           <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
+            href="/"
+            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90" to={"."}          >
             Go home
           </Link>
         </div>
@@ -80,18 +80,24 @@ function ThemedToaster() {
     />
   );
 }
+const queryClient = new QueryClient();
 
-const socket = useSocket();
+function SocketProviderWrapper({ children }: { children: React.ReactNode }) {
+  const socket = useSocket();
+  return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>;
+}
 
 function RootComponent() {
   return (
     <ThemeProvider>
-      <SocketContext.Provider value={socket}>
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <Outlet />
-          <ThemedToaster />
+          <SocketProviderWrapper>
+            <Outlet />
+            <ThemedToaster />
+          </SocketProviderWrapper>
         </AuthProvider>
-      </SocketContext.Provider>
+      </QueryClientProvider>
       
     </ThemeProvider>
   );

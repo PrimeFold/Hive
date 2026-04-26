@@ -97,13 +97,17 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
 
         })
 
-        socket.on('send_channel_message',  async(channelId:string,content:string)=>{
+        socket.on('send_channel_message',  async(channelId:string,content:string,clientId?:string)=>{
 
             const senderId = socket.data.userId;
-
-            const ChannelMessage = await createMessage(senderId as string,content,channelId);
-
-            io.to(`channel:${channelId}`).emit('new_channel_message',ChannelMessage)
+            try {
+                const ChannelMessage = await createMessage(senderId as string,content,channelId);
+                io.to(`channel:${channelId}`).emit('new_channel_message',ChannelMessage)
+            } catch (error) {
+                io.to(`channel:${channelId}`).emit('channel_message_failed',{
+                    clientId
+                })
+            }
 
         })
 

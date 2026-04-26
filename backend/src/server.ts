@@ -6,6 +6,14 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { router } from './utils/router';
 import { setupSocket } from './utils/socket';
+import './routes/auth/auth.route';
+import './routes/user/user.route';
+import './routes/workspaces/workspace.route';
+import './routes/channels/channel.route';
+import './routes/channels/channelMessage.route';
+import './routes/conversations/conversations.route';
+import './routes/directMessages/directMessage.route';
+import './routes/friends/friends.routes';
 
 dotenv.config();
 

@@ -3,6 +3,7 @@ import api, { setAccessToken, clearAccessToken as clearAxiosToken } from '@/lib/
 
 // 1. Define what a 'User' looks like in Hive
 interface User {
+  displayName?:string;
   id: string;
   email: string;
   username: string;
@@ -13,6 +14,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +34,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     clearAxiosToken();
     setUser(null);
+  };
+
+  const updateUser = (updates: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev));
   };
 
   useEffect(()=>{
@@ -60,7 +66,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   },[])
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

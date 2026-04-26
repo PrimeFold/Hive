@@ -1,6 +1,7 @@
-import { type Workspace, currentUser } from "@/data/dummy";
 import { Plus, Hexagon } from "lucide-react";
 import { motion } from "framer-motion";
+import { Workspace } from "@/types/workspace";
+import { ProfileMenu } from "@/components/app/ProfileMenu";
 
 interface Props {
   workspaces: Workspace[];
@@ -9,9 +10,14 @@ interface Props {
   onCreateWorkspace: () => void;
 }
 
-export function WorkspaceSidebar({ workspaces, activeWorkspaceId, onSelectWorkspace, onCreateWorkspace }: Props) {
+export function WorkspaceSidebar({ 
+  workspaces, 
+  activeWorkspaceId, 
+  onSelectWorkspace, 
+  onCreateWorkspace 
+}: Props) {
   return (
-    <div className="w-[72px] bg-background flex flex-col items-center py-3 border-r border-border">
+    <div className="w-18 bg-background flex flex-col items-center py-3 border-r border-border">
       {/* Logo */}
       <div className="mb-3 pb-3 border-b border-border w-full flex justify-center">
         <Hexagon className="h-6 w-6 text-primary fill-primary/20" />
@@ -21,33 +27,47 @@ export function WorkspaceSidebar({ workspaces, activeWorkspaceId, onSelectWorksp
       <div className="flex-1 flex flex-col items-center gap-2 w-full">
         {workspaces.map((ws) => {
           const isActive = ws.id === activeWorkspaceId;
+          
+          // Fallback: Use the first letter of the workspace name if no avatar exists
+          const displayChar = ws.name.charAt(0).toUpperCase();
+
           return (
             <div key={ws.id} className="relative w-full flex justify-center group">
-              {/* Active indicator */}
+              {/* Active indicator (The white pill on the left) */}
               <motion.div
                 initial={false}
                 animate={{
-                  height: isActive ? 36 : 0,
+                  height: isActive ? 36 : 8,
                   opacity: isActive ? 1 : 0,
+                  // Show a small dot on hover even if not active
+                  scaleY: isActive ? 1 : 0, 
                 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-primary"
+                className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full bg-foreground transition-all duration-200 group-hover:opacity-100 group-hover:scale-100 ${isActive ? "h-9" : "h-2"}`}
               />
+              
               <button
                 onClick={() => onSelectWorkspace(ws.id)}
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
+                className={`w-12 h-12 flex items-center justify-center text-sm font-bold transition-all duration-200 ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+                    ? "bg-primary text-primary-foreground rounded-2xl" 
+                    : "bg-secondary text-muted-foreground rounded-[50%] hover:rounded-2xl hover:bg-primary hover:text-primary-foreground"
                 }`}
                 title={ws.name}
               >
-                {ws.avatar}
+                {/* Check for avatar property, otherwise use the letter */}
+                {ws.avatar ? (
+                  <span className="text-lg">{ws.avatar}</span>
+                ) : (
+                  displayChar
+                )}
               </button>
+
               {/* Tooltip */}
-              <div className="absolute left-[72px] top-1/2 -translate-y-1/2 z-50 hidden group-hover:block">
-                <div className="bg-popover text-popover-foreground text-xs font-medium px-3 py-1.5 rounded-lg border border-border shadow-lg whitespace-nowrap ml-2">
+              <div className="absolute left-16 top-1/2 -translate-y-1/2 z-50 invisible group-hover:visible">
+                <div className="bg-popover text-popover-foreground text-xs font-semibold px-3 py-1.5 rounded-md border border-border shadow-xl whitespace-nowrap ml-4">
                   {ws.name}
+                  {/* Tooltip Arrow */}
+                  <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-popover border-l border-b border-border rotate-45" />
                 </div>
               </div>
             </div>
@@ -59,20 +79,15 @@ export function WorkspaceSidebar({ workspaces, activeWorkspaceId, onSelectWorksp
       <div className="w-8 h-px bg-border my-2" />
       <button
         onClick={onCreateWorkspace}
-        className="w-12 h-12 rounded-full bg-secondary text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors flex items-center justify-center"
+        className="w-12 h-12 rounded-full bg-secondary text-muted-foreground hover:bg-green-600 hover:text-white hover:rounded-2xl transition-all duration-200 flex items-center justify-center"
         title="Create workspace"
       >
         <Plus className="h-5 w-5" />
       </button>
 
-      {/* User avatar */}
+      {/* User profile avatar */}
       <div className="mt-3 pt-3 border-t border-border w-full flex justify-center">
-        <div className="relative">
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
-            {currentUser.avatar}
-          </div>
-          <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-online border-2 border-background" />
-        </div>
+        <ProfileMenu />
       </div>
     </div>
   );

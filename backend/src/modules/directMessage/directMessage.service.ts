@@ -15,7 +15,7 @@ export const createDirectMessage = async(senderId:string,content:string,convoId:
             include:{sender:true}
         })
         await redis.lpush(`direct-message:${convoId}`,JSON.stringify(DirectMessage))
-        await redis.ltrim(`direct-message:${convoId}`, 0, 39)
+        await redis.ltrim(`direct-message:${convoId}`, 0, 49)
         await redis.expire(`direct-message:${convoId}`, 10*60) 
 
         return {
@@ -52,14 +52,15 @@ export const getMessages = async(convoId:string)=>{
         const messages = await prisma.directMessage.findMany({
             where:{conversationId:convoId},
             orderBy:{createdAt:'asc'},
-            take:50
+            take:50,
+            include:{sender:true}
         })
 
         // Cache messages for future requests
         for (const msg of messages) {
             await redis.lpush(key, JSON.stringify(msg));
         }
-        await redis.ltrim(key, 0, 39);  // Keep only last 40
+        await redis.ltrim(key, 0, 49);  // Keep only last 50
         await redis.expire(key, 10*60);
 
         return{
@@ -76,12 +77,33 @@ export const getMessages = async(convoId:string)=>{
             statusCode: 500
         }
     }
-    
-
 }
 
+export const deleteDirectMessageById = async (messageId: string, userId: string) => {
+  try {
+    // 1. Find the message to verify it exists and check ownership
+    const message = await prisma.directMessage.findUnique({
+      where: { id: messageId },
+    });
 
+    if (!message) {
+      return { success: false, statusCode: 404, message: "Direct message not found" };
+    }
 
+    // 2. Ensure the user deleting the message is the one who sent it
+    if (message.senderId !== userId) {
+      return { success: false, statusCode: 403, message: "Unauthorized to delete this message" };
+    }
 
+    // 3. Perform the deletion
+    await prisma.directMessage.delete({
+      where: { id: messageId },
+    });
+    await redis.del(`direct-message:${message.conversationId}`);
 
-
+    return { success: true, statusCode: 200, message: "Message deleted successfully" };
+  } catch (error) {
+    console.error("Error in deleteDirectMessageById service:", error);
+    return { success: false, statusCode: 500, message: "Internal Server Error" };
+  }
+};

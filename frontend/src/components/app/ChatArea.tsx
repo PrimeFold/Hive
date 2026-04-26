@@ -5,7 +5,7 @@ import { TypingIndicator } from "./TypingIndicator";
 import { EmptyState } from "./EmptyState";
 import { useDM } from "@/hooks/use-dm";
 import { getMember } from "@/lib/get-member";
-
+import { useChannel } from "@/hooks/use-channel";
 
 type Channel = {
   id: string;
@@ -28,12 +28,11 @@ interface Props {
 export function ChatArea({ conversation, type }: Props) {
   const [message, setMessage] = useState("");
   const isDM = type === "dm";
+  const conversationId = conversation?.id as string;
+  const dm = useDM(isDM? conversationId : "");
+  const channel = useChannel(!isDM? conversationId : "");
 
-  
-  const conversationId = conversation?.id;
-
-  
-  const { messages, sendMessage } = useDM(conversationId || "");
+  const { messages, sendMessage, typing, typingUsers, isLoading } = isDM ? dm : channel;
 
   if (!conversation) {
     return (
@@ -51,10 +50,9 @@ export function ChatArea({ conversation, type }: Props) {
     );
   }
 
-  // ✅ DM vs Channel handling
-  const recipient = isDM
-    ? getMember((conversation as Conversation).participant.id)
-    : null;
+  // Type-safe recipient check
+  const recipientId = isDM ? (conversation as Conversation).participant.id : null;
+  const recipient = recipientId ? getMember(recipientId) : null;
 
   const title = isDM
     ? recipient?.displayName ?? "Direct message"
@@ -63,26 +61,32 @@ export function ChatArea({ conversation, type }: Props) {
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
-
+    
     sendMessage(message);
     setMessage("");
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(e.target.value);
+    // Trigger the socket emit for 'typing_start'
+    typing();
   };
 
   return (
     <div className="flex-1 flex flex-col bg-background min-w-0">
       {/* Header */}
       <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-4">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 min-w-0">
           {isDM ? (
-            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <MessageSquare className="h-4 w-4 text-muted-foreground shrink-0" />
           ) : (
-            <Hash className="h-4 w-4 text-muted-foreground" />
+            <Hash className="h-4 w-4 text-muted-foreground shrink-0" />
           )}
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground truncate">
               {title}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground truncate">
               {isDM
                 ? `Direct message with ${recipient?.displayName}`
                 : `Channel #${title}`}
@@ -90,45 +94,45 @@ export function ChatArea({ conversation, type }: Props) {
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative hidden sm:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <input
             type="text"
-            placeholder={
-              isDM
-                ? "Search in direct messages..."
-                : "Search channel messages..."
-            }
-            className="pl-8 pr-3 py-1.5 text-xs rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-48 transition-colors"
+            placeholder="Search messages..."
+            className="pl-8 pr-3 py-1.5 text-xs rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-48 transition-all"
           />
         </div>
       </div>
 
       {/* Messages */}
-      {messages.length > 0 ? (
-        <MessageList messages={messages} />
-      ) : (
-        <EmptyState
-          icon={MessageSquare}
-          title="No messages yet"
-          description={
-            isDM
-              ? `Start the conversation with ${recipient?.displayName}`
-              : `Be the first to say something in #${title}`
-          }
-        />
-      )}
+      <div className="flex-1 flex flex-col min-h-0">
+        {messages.length > 0 ? (
+          <MessageList messages={messages} isDM={isDM} />
+        ) : (
+          <EmptyState
+            icon={isDM ? MessageSquare : Hash}
+            title="No messages yet"
+            description={
+              isDM
+                ? `Start the conversation with ${recipient?.displayName}`
+                : `Be the first to say something in #${title}`
+            }
+          />
+        )}
+      </div>
 
-      {/* Typing */}
-      {messages.length > 0 && (
-        <TypingIndicator username={recipient?.displayName ?? "Friend"} />
-      )}
+      {/* Typing Indicator: Show if the recipient is in the typingUsers array */}
+      <div className="px-4 h-6">
+         {isDM && recipientId && typingUsers.includes(recipientId) && (
+           <TypingIndicator username={recipient?.displayName ?? "Someone"} />
+         )}
+      </div>
 
       {/* Input */}
       <div className="px-4 pb-4">
         <form
           onSubmit={handleSend}
-          className="flex items-center gap-2 bg-secondary rounded-xl px-4 py-2.5 border border-border focus-within:ring-2 focus-within:ring-primary/50 transition-all"
+          className="flex items-center gap-2 bg-secondary rounded-xl px-4 py-2.5 border border-border focus-within:border-primary/50 transition-all"
         >
           <button
             type="button"
@@ -140,7 +144,7 @@ export function ChatArea({ conversation, type }: Props) {
           <input
             type="text"
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleInputChange}
             placeholder={
               isDM
                 ? `Message ${recipient?.displayName}`

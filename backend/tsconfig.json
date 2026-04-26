@@ -41,7 +41,7 @@
     "skipLibCheck": true,
     "moduleResolution": "bundler"
   },
-  "include": ["src"],
+  "include": ["src", "../frontend/src/components/app/SearchUsers.tsx"],
   "exclude": ["node_modules"]
 
 }

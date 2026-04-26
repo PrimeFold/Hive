@@ -3,7 +3,7 @@ export function MessageSkeleton() {
     <div className="px-4 py-4 space-y-4">
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="flex gap-2.5 animate-pulse">
-          <div className="w-9 h-9 rounded-full bg-secondary flex-shrink-0" />
+          <div className="w-9 h-9 rounded-full bg-secondary shrink-0" />
           <div className="flex-1 space-y-2">
             <div className="flex gap-2">
               <div className="h-3 w-20 bg-secondary rounded" />

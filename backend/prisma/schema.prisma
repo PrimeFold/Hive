@@ -13,6 +13,13 @@ datasource db {
  
 }
 
+enum RequestStatus{
+  PENDING
+  ACCEPTED
+  REJECTED
+
+}
+
 enum Role{
   OWNER
   MEMBER
@@ -60,8 +67,7 @@ model WorkspaceMember {
 model Channel {
   id          String    @id @default(cuid())
   name        String
-  createdAt   DateTime  @default(now())
-
+  createdAt   DateTime  @default(now())  
   workspaceId String
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
 

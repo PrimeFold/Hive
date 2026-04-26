@@ -1,36 +1,43 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { workspaces, members, friends as initialFriends, directMessages as initialDirectMessages, currentUser } from "@/data/dummy";
 import { WorkspaceSidebar } from "@/components/app/WorkspaceSidebar";
 import { ChannelSidebar } from "@/components/app/ChannelSidebar";
 import { ChatArea } from "@/components/app/ChatArea";
 import { CreateWorkspaceModal, CreateChannelModal, InviteMemberModal } from "@/components/app/Modals";
 import { Hexagon } from "lucide-react";
 import { EmptyState } from "@/components/app/EmptyState";
+import { useAuth } from "@/context/auth-context";
 
 export const Route = createFileRoute("/app")({
   component: AppPage,
 });
 
 function AppPage() {
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState(workspaces[0].id);
-  const [activeChannelId, setActiveChannelId] = useState(workspaces[0].channels[0].id);
+  const { user: currentUser } = useAuth();
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState("");
+  const [activeChannelId, setActiveChannelId] = useState("");
   const [activeView, setActiveView] = useState<"channels" | "dms">("channels");
-  const [activeDMId, setActiveDMId] = useState(initialDirectMessages[0]?.id ?? "");
-  const [friends, setFriends] = useState(initialFriends);
-  const [directMessages, setDirectMessages] = useState(initialDirectMessages);
+  const [activeDMId, setActiveDMId] = useState("");
+  const [friends, setFriends] = useState<any[]>([]);
+  const [directMessages, setDirectMessages] = useState<any[]>([]);
   const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [showInviteMember, setShowInviteMember] = useState(false);
 
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
-  const activeChannel = activeWorkspace?.channels.find((c) => c.id === activeChannelId) ?? null;
+  const activeChannel = activeWorkspace?.channels?.find((c: any) => c.id === activeChannelId) ?? null;
   const activeDM = directMessages.find((dm) => dm.id === activeDMId) ?? null;
 
   const handleSelectWorkspace = (id: string) => {
     setActiveWorkspaceId(id);
     const ws = workspaces.find((w) => w.id === id);
-    if (ws && ws.channels.length > 0) {
+    if (ws && ws.channels?.length > 0) {
       setActiveChannelId(ws.channels[0].id);
     } else {
       setActiveChannelId("");
@@ -56,7 +63,7 @@ function AppPage() {
       (member) =>
         member.username.toLowerCase() === normalized || member.displayName.toLowerCase() === normalized,
     );
-    if (!existing || existing.id === currentUser.id) return;
+    if (!existing || (currentUser && existing.id === currentUser.id)) return;
 
     if (friends.some((friend) => friend.id === existing.id)) {
       return;
@@ -103,7 +110,7 @@ function AppPage() {
           />
           <ChatArea
             conversation={activeView === "channels" ? activeChannel : activeDM}
-            type={activeView}
+            type={activeView === "channels" ? "channel" : "dm"}
           />
         </>
       ) : (
