@@ -134,8 +134,8 @@ export const login = async (
       data: { accessToken, refreshToken },
       statusCode: 200
     };
-  } catch {
-    return { success: false, message: "Login failed", statusCode: 500 };
+  } catch(error) {
+    return { success: false, message: (error as Error).message, statusCode: 500 };
   }
 };
 
