@@ -9,7 +9,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "tsx watch src/server.ts",
-    "start":"tsx src/index.ts"
+    "start": "tsx src/index.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.7.0",
@@ -29,6 +29,7 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
     "socket.io": "^4.8.3",
+    "tsx": "^4.21.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
