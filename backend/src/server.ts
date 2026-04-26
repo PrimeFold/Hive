@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { router } from './utils/router';
+import { pool } from './db';
 import { setupSocket } from './utils/socket';
 import './routes/auth/auth.route';
 import './routes/user/user.route';
@@ -33,12 +34,8 @@ app.use('/',router)
 
 setupSocket(httpServer, FRONTEND_URL as string);
 
+pool.connect((err, client, release) => {
+    if (release) release();
+});
 
-httpServer.listen(PORT,()=>{
-    console.log(`🚀 Server running on http://localhost:${PORT}`)
-})
-
-
-
-
-
+httpServer.listen(PORT);
