@@ -116,6 +116,10 @@ export const login = async (
       { expiresIn: "7d", issuer: "Hive" }
     );
 
+    console.log("SIGNING TOKEN...");
+    console.log("JWT_SECRET:", process.env.JWT_ACCESS_SECRET);
+    console.log("JWT_ACCESS_SECRET:", process.env.REFRESH_SECRET);
+
     const hashedRFT = await bcrypt.hash(refreshToken,10);
 
     await prisma.refreshToken.create({
