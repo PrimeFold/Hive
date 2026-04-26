@@ -1,6 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, X, Loader2 } from "lucide-react";
 import api from "@/lib/axios";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { Loader2, Check, X } from "lucide-react";
 
 export function PendingRequests() {
   const queryClient = useQueryClient();
