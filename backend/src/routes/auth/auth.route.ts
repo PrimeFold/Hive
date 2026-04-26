@@ -9,5 +9,5 @@ router.post('/auth/signup', authLimiter, AuthController.signup as express.Reques
 router.post('/auth/login', authLimiter, AuthController.login as express.RequestHandler)
 
 //refresh token route
-router.post('/auth/refresh')
+router.post('/auth/refresh', AuthController.generateRefreshToken as express.RequestHandler)
 

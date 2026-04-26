@@ -38,15 +38,23 @@ export const login:Handler = async(req,res)=>{
     const statusCode = response.statusCode || 500;
     if(response.success){
         const accessToken = response.data.accessToken;
+        const decodedAccess = jwt.decode(accessToken) as { id?: string } | null;
+        const userId = decodedAccess?.id;
+        const userResponse = userId ? await AuthService.getUser(userId) : null;
+        const sameSite: 'none' | 'strict' = process.env.NODE_ENV === 'production' ? 'none' : 'strict';
 
         res.cookie('refresh-token',response.data.refreshToken,{
             httpOnly:true,
             secure:process.env.NODE_ENV ==='production',
-            sameSite:'strict',
+            sameSite,
             maxAge:7 * 24 * 60 * 60 * 1000,
         })
 
-        return res.status(statusCode).json({message:response.message, token:accessToken })
+        return res.status(statusCode).json({
+            message:response.message,
+            accessToken,
+            user: userResponse?.success ? userResponse.data : null
+        })
 
     }else{
 
@@ -56,12 +64,27 @@ export const login:Handler = async(req,res)=>{
 }
 
 export const generateRefreshToken:Handler = async(req,res)=>{
-    const userId = req.user?.id;
+    const CookieToken = req.cookies['refresh-token'] as string | undefined;
+    if(!CookieToken){
+      return res.status(403).json({
+          message:"Forbidden.."
+      })
+    }
 
+    let decoded: { userId?: string; id?: string };
+    try {
+      decoded = jwt.verify(CookieToken, process.env.JWT_REFRESH_SECRET as Secret) as { userId?: string; id?: string };
+    } catch {
+      return res.status(401).json({
+          message:"Unauthorized.."
+      })
+    }
+
+    const userId = decoded.userId || decoded.id;
     if(!userId){
-        return res.status(403).json({
-            message:"Forbidden.."
-        })
+      return res.status(403).json({
+          message:"Forbidden.."
+      })
     }
 
     const userResponseData = await AuthService.getUser(userId);
@@ -73,7 +96,6 @@ export const generateRefreshToken:Handler = async(req,res)=>{
     }
 
 
-    const CookieToken = req.cookies['refresh-token'] as string | undefined;
     const response = await AuthService.getRefreshTokenFromDB(userId);
     if(!response.success){
         const statusCode = response.statusCode || 500;
@@ -82,23 +104,24 @@ export const generateRefreshToken:Handler = async(req,res)=>{
         })
     }
 
-    const DBToken = response.data?.tokenHash
-    if(!CookieToken || !DBToken){
-        return res.status(403).json({
-            message:"Forbidden.."
-        })
+    const tokenRows = response.data || [];
+    let matchedTokenId: string | null = null;
+    for (const tokenRow of tokenRows) {
+      const isValid = await bcrypt.compare(CookieToken, tokenRow.tokenHash);
+      if (isValid) {
+        matchedTokenId = tokenRow.id;
+        break;
+      }
     }
-
-    const isValid = await bcrypt.compare(CookieToken, DBToken)
-    if(!isValid){
-        return res.status(401).json({
-            message:"Unauthorized.."
-        })
+    if(!matchedTokenId){
+      return res.status(401).json({
+          message:"Unauthorized.."
+      })
     }
 
     const newAccessToken = jwt.sign(
         {id:userId},
-        process.env.JWT_ACCESS_SECRET as Secret,
+        process.env.JWT_SECRET as Secret,
         {expiresIn:'15m'}
     )
 
@@ -109,7 +132,7 @@ export const generateRefreshToken:Handler = async(req,res)=>{
     )
 
 
-    const deleted = await AuthService.deleteOldTokenFromDB(userId);
+    const deleted = await AuthService.deleteOldTokenFromDB(matchedTokenId);
     if(!deleted.success){
         return res.status(500).json({
             message:deleted.message
@@ -122,6 +145,13 @@ export const generateRefreshToken:Handler = async(req,res)=>{
             message:stored.message
         })
     }
+    const sameSite: 'none' | 'strict' = process.env.NODE_ENV === 'production' ? 'none' : 'strict';
+    res.cookie('refresh-token',newRefreshToken,{
+        httpOnly:true,
+        secure:process.env.NODE_ENV ==='production',
+        sameSite,
+        maxAge:7 * 24 * 60 * 60 * 1000,
+    })
     return res.status(200).json({message:stored.message,accessToken:newAccessToken,user:userResponseData.data})
 }
 

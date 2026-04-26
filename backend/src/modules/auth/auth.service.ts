@@ -4,7 +4,6 @@ import { redis } from "../../utils/redis";
 import jwt, { Secret } from "jsonwebtoken";
 import { AuthServiceResponse, UserPayload } from "../../types";
 import { LoginPayload } from "../../types";
-import { success } from "zod";
 
 const MAX_ATTEMPTS = 3;
 const BLOCK_TIME = 60 * 60;
@@ -102,11 +101,11 @@ export const login = async (
 
     if (!isValid) return { ...fail(ip), statusCode: 401 };
 
-    const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as Secret;
+    const ACCESS_SECRET = process.env.JWT_SECRET as Secret;
     const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as Secret;
 
     const accessToken = jwt.sign(
-      { userId: user.id },
+      { id: user.id },
       ACCESS_SECRET,
       { expiresIn: "15m", issuer: "Hive" }
     );
@@ -142,14 +141,15 @@ export const login = async (
 
 export const getRefreshTokenFromDB = async(userId:string)=>{
   try {
-    const token = await prisma.refreshToken.findUnique({
-      where:{id:userId},
+    const tokens = await prisma.refreshToken.findMany({
+      where:{userId},
       select:{
+        id:true,
         tokenHash:true
       }
     })
 
-    if(!token){
+    if(!tokens || tokens.length === 0){
       return {
         success:false,
         message:"token not found..",
@@ -160,7 +160,7 @@ export const getRefreshTokenFromDB = async(userId:string)=>{
     return {
       success:true,
       message:"Found rf token",
-      data:token,
+      data:tokens,
       statusCode:200
     }
 
@@ -175,10 +175,10 @@ export const getRefreshTokenFromDB = async(userId:string)=>{
 
 }
 
-export const deleteOldTokenFromDB = async(userId:string)=>{
+export const deleteOldTokenFromDB = async(tokenId:string)=>{
   try {
     await prisma.refreshToken.delete({
-      where:{id:userId}
+      where:{id:tokenId}
     })
 
     return {
@@ -196,13 +196,14 @@ export const deleteOldTokenFromDB = async(userId:string)=>{
   }
 }
 
-export const storeNewTokenInDB = async(newRefreshTokenHash:string,userId:string)=>{
+export const storeNewTokenInDB = async(newRefreshToken:string,userId:string)=>{
   const id = userId;
   try {
+    const hashedRFT = await bcrypt.hash(newRefreshToken,10);
     await prisma.refreshToken.create({
       data: {
         userId:id,
-        tokenHash: newRefreshTokenHash,
+        tokenHash: hashedRFT,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     })
