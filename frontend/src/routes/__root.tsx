@@ -1,12 +1,11 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from "sonner";
-import appCss from "../styles.css?url";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/context/auth-context";
 import SocketContext from "@/context/socket-context";
 import { useSocket } from "@/hooks/use-socket";
-
+import "../styles.css"
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -35,9 +34,6 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Hive — Real-time Team Collaboration" },
       { name: "description", content: "Hive is a real-time team collaboration app for modern teams." },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
     ],
   }),
   shellComponent: RootShell,
