@@ -69,8 +69,8 @@ export const signup = async (data: {
       },
       statusCode: 201
     };
-  } catch {
-    return { success: false, message: "Signup failed", statusCode: 500 };
+  } catch(error) {
+    return { success: false, message: (error as Error).message, statusCode: 500 };
   }
 };
 
