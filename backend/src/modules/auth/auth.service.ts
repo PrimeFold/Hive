@@ -162,4 +162,206 @@ export const signup = async (data: {
   }
 };
 
+// -------------------- REFRESH TOKEN FUNCTIONS --------------------
+export const getRefreshTokenFromDB = async (userId: string) => {
+  try {
+    const tokens = await prisma.refreshToken.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        tokenHash: true
+      }
+    });
+
+    if (!tokens || tokens.length === 0) {
+      return {
+        success: false,
+        message: "Token not found..",
+        statusCode: 404
+      };
+    }
+
+    return {
+      success: true,
+      message: "Found rf token",
+      data: tokens,
+      statusCode: 200
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Internal Server Error",
+      statusCode: 500
+    };
+  }
+};
+
+export const deleteOldTokenFromDB = async (tokenId: string) => {
+  try {
+    await prisma.refreshToken.delete({
+      where: { id: tokenId }
+    });
+
+    return {
+      success: true,
+      message: "Refresh token deleted..",
+      statusCode: 200
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Internal Server Error",
+      statusCode: 500
+    };
+  }
+};
+
+export const storeNewTokenInDB = async (newRefreshToken: string, userId: string) => {
+  const id = userId;
+  try {
+    const hashedRFT = await bcrypt.hash(newRefreshToken, 10);
+    await prisma.refreshToken.create({
+      data: {
+        userId: id,
+        tokenHash: hashedRFT,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+    return {
+      success: true,
+      message: "Stored the refresh token in DB",
+      statusCode: 200
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Internal Server Error",
+      statusCode: 500
+    };
+  }
+};
+
+// -------------------- GET USER --------------------
+export const getUser = async (userId: string) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        displayName: true,
+        bio: true,
+      }
+    });
+
+    if (!user) {
+      return { success: false, message: "User not found", statusCode: 404 };
+    }
+
+    const userPayload: UserPayload = {
+      ...user,
+      displayName: user.displayName ?? "",
+      bio: user.bio ?? "",
+    };
+    
+    return {
+      success: true,
+      message: "Fetched User",
+      statusCode: 200,
+      data: userPayload
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Internal Server Error",
+      statusCode: 500
+    };
+  }
+};
+
+// -------------------- ADD THESE MISSING FUNCTIONS --------------------
+
+export const refreshToken = async (refreshToken: string): Promise<AuthServiceResponse<{ accessToken: string }>> => {
+  try {
+    const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as Secret;
+    
+    if (!REFRESH_SECRET) {
+      return { success: false, message: "Server configuration error", statusCode: 500 };
+    }
+
+    const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string };
+    
+    if (!decoded || !decoded.id) {
+      return { success: false, message: "Invalid refresh token", statusCode: 403 };
+    }
+
+    // Check if refresh token exists in DB
+    const refreshTokens = await prisma.refreshToken.findMany({
+      where: { userId: decoded.id }
+    });
+
+    let isValid = false;
+    for (const token of refreshTokens) {
+      if (await bcrypt.compare(refreshToken, token.tokenHash)) {
+        isValid = true;
+        break;
+      }
+    }
+
+    if (!isValid) {
+      return { success: false, message: "Invalid refresh token", statusCode: 403 };
+    }
+
+    // Generate new access token
+    const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as Secret;
+    const newAccessToken = jwt.sign(
+      { id: decoded.id },
+      ACCESS_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    return {
+      success: true,
+      message: "Token refreshed successfully",
+      data: { accessToken: newAccessToken },
+      statusCode: 200
+    };
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    return { success: false, message: "Invalid or expired refresh token", statusCode: 403 };
+  }
+};
+
+// Logout function
+export const logout = async (userId: string, refreshToken: string) => {
+  try {
+    // Find and delete the specific refresh token
+    const refreshTokens = await prisma.refreshToken.findMany({
+      where: { userId }
+    });
+
+    for (const token of refreshTokens) {
+      if (await bcrypt.compare(refreshToken, token.tokenHash)) {
+        await prisma.refreshToken.delete({
+          where: { id: token.id }
+        });
+        break;
+      }
+    }
+
+    return {
+      success: true,
+      message: "Logged out successfully",
+      statusCode: 200
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: "Internal Server Error",
+      statusCode: 500
+    };
+  }
+};
+
 
