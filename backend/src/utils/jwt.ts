@@ -7,7 +7,7 @@ export interface JwtPayload {
 
 export const verifyAccessToken = (token: string): JwtPayload | null => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET as Secret) as JwtPayload
+    return jwt.verify(token, process.env.JWT_ACCESS_SECRET as Secret) as JwtPayload
   } catch {
     return null
   }
