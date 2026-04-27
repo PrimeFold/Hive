@@ -4,6 +4,9 @@ import prisma from "../../lib/prisma";
 import { AuthServiceResponse, LoginPayload, UserPayload } from "../../types";
 import { redis } from "../../utils/redis";
 import bcrypt from 'bcrypt'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const MAX_ATTEMPTS = 3;
 const BLOCK_TIME = 60 * 60;
@@ -64,13 +67,13 @@ export const login = async (
     const accessToken = jwt.sign(
       { id: user.id },
       ACCESS_SECRET,
-      { expiresIn: "15m", issuer: "Hive" }
+      { expiresIn: "15m" }
     );
 
     const refreshToken = jwt.sign(
-      { userId: user.id },
+      { id: user.id },
       REFRESH_SECRET,
-      { expiresIn: "7d", issuer: "Hive" }
+      { expiresIn: "7d" }
     );
 
     console.log("Tokens signed successfully");
