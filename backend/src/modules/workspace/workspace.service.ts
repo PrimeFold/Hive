@@ -3,6 +3,7 @@
 import prisma from "../../lib/prisma"
 
 export const createWorkspace = async(name: string, ownerId: string) => {
+    console.log(`[WorkspaceService] Attempting to create workspace: "${name}" for user: ${ownerId}`);
     try {
         const workspace = await prisma.workspace.create({
             data: {
@@ -26,9 +27,10 @@ export const createWorkspace = async(name: string, ownerId: string) => {
             statusCode: 201
         }
     } catch (error) {
+        console.error("[WorkspaceService] Prisma error creating workspace:", error);
         return {
             success: false,
-            message: "Error creating workspace",
+            message: error instanceof Error ? error.message : "Error creating workspace",
             statusCode: 500
         }
     }
@@ -205,7 +207,3 @@ export const removeMember = async(workspaceId: string, userId: string) => {
         }
     }
 }
-
-
-
-
