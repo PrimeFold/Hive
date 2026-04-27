@@ -1,3 +1,4 @@
+import { channel } from "node:diagnostics_channel";
 import prisma from "../../../lib/prisma"
 import { redis } from "../../../utils/redis"
 
@@ -87,12 +88,13 @@ export const createMessage=async(userId:string,content:string,channelId:string)=
 
 }
 
-export const deleteChannelMessageByID = async(messageId:string,userId:string)=>{
+export const deleteChannelMessageByID = async(channelId:string,messageId:string,userId:string)=>{
 
     try {
     // 1. Find the message to verify it exists and check ownership
     const message = await prisma.message.findUnique({
-      where: { id: messageId },
+      where: { id: messageId , channelId:channelId },
+
     });
 
     if (!message) {
@@ -120,4 +122,34 @@ export const deleteChannelMessageByID = async(messageId:string,userId:string)=>{
 }
 
 
+export const createChannelMessage = async (channelId: string, userId: string, content: string) => {
+  try {
+    const newMessage = await prisma.message.create({
+      data: {
+        channelId: channelId,
+        userId: userId,
+        content: content
+      },
+      include: { user: true }
+    });
 
+    // Update cache
+    await redis.lpush(`channel-message:${channelId}`, JSON.stringify(newMessage));
+    await redis.ltrim(`channel-message:${channelId}`, 0, 49);
+    await redis.expire(`channel-message:${channelId}`, 15 * 60);
+
+    return {
+      success: true,
+      message: "Message created successfully",
+      data: newMessage,
+      statusCode: 201
+    };
+  } catch (error) {
+    console.error("Error in createChannelMessage service:", error);
+    return {
+      success: false,
+      message: "Error creating message",
+      statusCode: 500
+    };
+  }
+};

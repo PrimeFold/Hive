@@ -1,4 +1,4 @@
-import express from 'express'
+﻿import express from 'express'
 import * as ChannelController from '../../modules/channel/channel.controller'
 import { router } from '../../utils/router';
 import { AuthMiddleware } from '../../middlewares/auth/auth.middleware';

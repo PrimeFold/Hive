@@ -1,5 +1,4 @@
-import express from 'express'
-import * as WorkspaceController from '../../modules/workspace/workspace.controller'
+﻿import * as WorkspaceController from '../../modules/workspace/workspace.controller'
 import { router } from '../../utils/router';
 import { AuthMiddleware } from '../../middlewares/auth/auth.middleware';
 import { Limiter } from '../../lib/rateLimiter';

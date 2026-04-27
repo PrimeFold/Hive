@@ -2,6 +2,9 @@ import { Handler } from "../../types/handler";
 import { workspaceSchema } from "../../validation/zod";
 import * as WorkspaceService from './workspace.service'
 
+const readParam = (value: string | string[] | undefined): string | undefined =>
+    Array.isArray(value) ? value[0] : value;
+
 export const createWorkspace: Handler = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) {
@@ -26,7 +29,10 @@ export const createWorkspace: Handler = async (req, res) => {
 }
 
 export const getWorkspaceById: Handler = async (req, res) => {
-    const workspaceId = req.params.id;
+    const workspaceId = readParam(req.params.id);
+    if (!workspaceId) {
+        return res.status(400).json({ message: "Workspace id is required" });
+    }
 
     const response = await WorkspaceService.getWorkspaceById(workspaceId);
 
@@ -55,7 +61,10 @@ export const getUserWorkspaces: Handler = async (req, res) => {
 }
 
 export const updateWorkspaceName: Handler = async (req, res) => {
-    const workspaceId = req.params.id;
+    const workspaceId = readParam(req.params.id);
+    if (!workspaceId) {
+        return res.status(400).json({ message: "Workspace id is required" });
+    }
 
     const result = workspaceSchema.safeParse(req.body);
     if (!result.success) {
@@ -75,7 +84,10 @@ export const updateWorkspaceName: Handler = async (req, res) => {
 }
 
 export const deleteWorkspace: Handler = async (req, res) => {
-    const workspaceId = req.params.id;
+    const workspaceId = readParam(req.params.id);
+    if (!workspaceId) {
+        return res.status(400).json({ message: "Workspace id is required" });
+    }
 
     const response = await WorkspaceService.deleteWorkspace(workspaceId);
 
@@ -88,8 +100,12 @@ export const deleteWorkspace: Handler = async (req, res) => {
 }
 
 export const addMember: Handler = async (req, res) => {
-    const workspaceId = req.params.id;
+    const workspaceId = readParam(req.params.id);
     const { userId, role } = req.body;
+
+    if (!workspaceId) {
+        return res.status(400).json({ message: "Workspace id is required" });
+    }
 
     if (!userId) {
         return res.status(400).json({ message: "User ID required" });
@@ -106,8 +122,12 @@ export const addMember: Handler = async (req, res) => {
 }
 
 export const removeMember: Handler = async (req, res) => {
-    const workspaceId = req.params.id;
+    const workspaceId = readParam(req.params.id);
     const { userId } = req.body;
+
+    if (!workspaceId) {
+        return res.status(400).json({ message: "Workspace id is required" });
+    }
 
     if (!userId) {
         return res.status(400).json({ message: "User ID required" });

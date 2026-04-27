@@ -23,8 +23,7 @@ export const updateUsername:Handler = async(req,res)=>{
     const statusCode = response.statusCode || 500;
     if(response.success){
         return res.status(statusCode).json({
-            message:response.message,
-            user:response.data
+            message:response.message
         })
     }else{
         return res.status(statusCode).json({
@@ -54,8 +53,7 @@ export const updateEmail:Handler = async(req,res)=>{
     const statusCode = response.statusCode || 500;
     if(response.success){
         return res.status(statusCode).json({
-            message:response.message,
-            user:response.data
+            message:response.message
         })
     }else{
         return res.status(statusCode).json({
@@ -80,8 +78,7 @@ export const updatePassword:Handler = async(req,res)=>{
     const statusCode = response.statusCode || 500;
     if(response.success){
         return res.status(statusCode).json({
-            message:response.message,
-            user:response.data
+            message:response.message
         })
     }else{
         return res.status(statusCode).json({

@@ -1,4 +1,4 @@
-import { Handler } from '../../types/handler';
+﻿import { Handler } from '../../types/handler';
 import * as AuthService from './auth.service';
 import { loginSchema, signupSchema } from '../../validation/zod';
 import bcrypt from 'bcrypt'
