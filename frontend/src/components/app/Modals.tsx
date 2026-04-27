@@ -61,7 +61,7 @@ export function CreateWorkspaceModal({ open, onClose }: { open: boolean; onClose
     onSuccess: (_, variables) => {
       toast.success(`Workspace "${variables}" created`);
       setName("");
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] }); // Add your specific query key here
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] }); 
       onClose();
     },
     onError: (error: any) => {
@@ -104,17 +104,21 @@ export function CreateWorkspaceModal({ open, onClose }: { open: boolean; onClose
 
 export function CreateChannelModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [name, setName] = useState("");
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (channelName: string) => {
-      console.log("Create channel:", channelName);
-      await new Promise((r) => setTimeout(r, 500));
-      return channelName;
+      const { data } = await api.post("/channels", { name: channelName });
+      return data;
     },
-    onSuccess: (channelName) => {
-      toast.success(`Channel #${channelName} created`);
+    onSuccess: (_, variables) => {
+      toast.success(`Channel #${variables} created`);
       setName("");
+      queryClient.invalidateQueries({ queryKey: ["channels"] });
       onClose();
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to create channel");
     },
   });
 
@@ -153,17 +157,21 @@ export function CreateChannelModal({ open, onClose }: { open: boolean; onClose: 
 
 export function InviteMemberModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [email, setEmail] = useState("");
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (memberEmail: string) => {
-      console.log("Invite member:", memberEmail);
-      await new Promise((r) => setTimeout(r, 500));
-      return memberEmail;
+      // Adjust the endpoint to match your exact backend invite route
+      const { data } = await api.post("/workspace/invite", { email: memberEmail });
+      return data;
     },
-    onSuccess: (memberEmail) => {
-      toast.success(`Invite sent to ${memberEmail}`);
+    onSuccess: (_, variables) => {
+      toast.success(`Invite sent to ${variables}`);
       setEmail("");
       onClose();
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to send invite");
     },
   });
 

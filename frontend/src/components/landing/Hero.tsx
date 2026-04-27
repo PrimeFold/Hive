@@ -1,42 +1,53 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, ImageIcon } from "lucide-react";
-import ColorBends from "./ColorBends";
-
-// Amber palette derived from --primary oklch(0.78 0.16 65) — warm peach/amber tones
-const HIVE_BENDS_COLORS = ["#f5b06a", "#ff8a47", "#d76a3a", "#7a3a1f", "#1a1208"];
+import DotField from "./DotField";
+import SoftAurora from './SoftAurora';
 
 export function Hero() {
   return (
     <section className="relative pt-28 pb-8 px-6 overflow-hidden">
-      {/* WebGL ColorBends background — themed to amber palette */}
-      <div className="absolute inset-0 pointer-events-none opacity-50 dark:opacity-60">
-        <ColorBends
-          colors={HIVE_BENDS_COLORS}
-          speed={0.15}
-          scale={1.2}
-          frequency={1}
-          warpStrength={0.9}
-          intensity={1.2}
-          bandWidth={5}
-          autoRotate={2}
-          mouseInfluence={0.6}
-          parallax={0.4}
-          noise={0.08}
-          iterations={2}
+
+      {/* Layer 1: SoftAurora — teal wash */}
+      <div className="absolute inset-0 pointer-events-none">
+        <SoftAurora
+          speed={0.4}
+          scale={1.8}
+          brightness={1}
+          color1="#0D9488"
+          color2="#4F5EC7"
+          noiseFrequency={1.8}
+          noiseAmplitude={0.7}
+          bandHeight={0.45}
+          bandSpread={1.2}
+          octaveDecay={0.45}
+          layerOffset={0.15}
+          colorSpeed={0.8}
+          enableMouseInteraction
+          mouseInfluence={0.15}
         />
       </div>
-      {/* Soften the bends behind text */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background pointer-events-none" />
 
-      {/* Grid pattern overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)`,
-          backgroundSize: "64px 64px",
-        }}
-      />
+      {/* Layer 2: DotField — teal-tinted dots */}
+      <div className="absolute inset-0 pointer-events-none opacity-40 dark:opacity-50">
+        <DotField
+          dotRadius={1.2}
+          dotSpacing={18}
+          bulgeStrength={55}
+          glowRadius={180}
+          sparkle={false}
+          waveAmplitude={0}
+          cursorRadius={420}
+          cursorForce={0.08}
+          bulgeOnly
+          gradientFrom="#0D9488"
+          gradientTo="#5BB8B3"
+          glowColor="#064E4A"
+        />
+      </div>
+
+      {/* Soften behind text */}
+      <div className="absolute inset-0 bg-linear-to-b from-background/50 via-background/25 to-background pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto text-center">
         {/* Badge */}
@@ -118,11 +129,11 @@ export function Hero() {
                 className="w-8 h-8 rounded-full border-2 border-background flex items-center justify-center text-[10px] font-semibold"
                 style={{
                   backgroundColor: [
-                    "oklch(0.55 0.15 277)",
-                    "oklch(0.55 0.15 150)",
-                    "oklch(0.55 0.15 30)",
-                    "oklch(0.55 0.15 200)",
-                    "oklch(0.55 0.15 330)",
+                    "oklch(0.55 0.13 185)",  /* teal */
+                    "oklch(0.55 0.13 262)",  /* indigo */
+                    "oklch(0.55 0.15 150)",  /* sage */
+                    "oklch(0.55 0.13 220)",  /* blue-indigo */
+                    "oklch(0.55 0.14 195)",  /* teal-cyan */
                   ][i],
                   color: "white",
                   zIndex: 5 - i,
@@ -135,7 +146,12 @@ export function Hero() {
           <div className="text-left">
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((s) => (
-                <svg key={s} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" viewBox="0 0 20 20">
+                <svg
+                  key={s}
+                  className="w-3.5 h-3.5"
+                  style={{ color: "oklch(0.62 0.11 185)", fill: "oklch(0.62 0.11 185)" }}
+                  viewBox="0 0 20 20"
+                >
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
               ))}
@@ -144,20 +160,17 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* Screenshot placeholder slot */}
+        {/* Screenshot placeholder */}
         <motion.div
           initial={{ opacity: 0, y: 32, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
           className="mt-16 mx-auto max-w-4xl relative"
         >
-          {/* Glow behind image */}
-          <div className="absolute -inset-4 bg-gradient-to-b from-primary/10 via-primary/5 to-transparent rounded-2xl blur-2xl pointer-events-none" />
+          <div className="absolute -inset-4 bg-linear-to-b from-primary/10 via-primary/5 to-transparent rounded-2xl blur-2xl pointer-events-none" />
 
           <div className="relative rounded-xl border border-border/80 bg-surface overflow-hidden shadow-2xl shadow-black/40 aspect-[16/10]">
-            {/* TODO: Replace with actual app screenshot, e.g.: */}
-            {/* <img src="/screenshots/hive-app.png" alt="Hive app preview" className="w-full h-full object-cover" /> */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-surface to-background">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-linear-to-br from-surface to-background">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <ImageIcon className="h-6 w-6 text-primary/70" />
               </div>
@@ -168,8 +181,7 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Reflection effect */}
-          <div className="absolute -bottom-12 left-4 right-4 h-24 bg-gradient-to-b from-primary/5 to-transparent rounded-2xl blur-xl pointer-events-none" />
+          <div className="absolute -bottom-12 left-4 right-4 h-24 bg-linear-to-b from-primary/5 to-transparent rounded-2xl blur-xl pointer-events-none" />
         </motion.div>
       </div>
 

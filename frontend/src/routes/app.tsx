@@ -7,6 +7,8 @@ import { CreateWorkspaceModal, CreateChannelModal, InviteMemberModal } from "@/c
 import { Hexagon } from "lucide-react";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useAuth } from "@/context/auth-context";
+import api from "@/lib/axios";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/app")({
   component: AppPage,
@@ -14,7 +16,6 @@ export const Route = createFileRoute("/app")({
 
 function AppPage() {
   const { user: currentUser } = useAuth();
-  const [workspaces, setWorkspaces] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState("");
   const [activeChannelId, setActiveChannelId] = useState("");
@@ -29,6 +30,17 @@ function AppPage() {
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
+
+  const { data: workspaces = [] } = useQuery({
+  queryKey: ["workspaces"],
+    queryFn: async () => {
+      const { data } = await api.get("/workspace");
+      return data;
+    },
+  });
+
+
+
 
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
   const activeChannel = activeWorkspace?.channels?.find((c: any) => c.id === activeChannelId) ?? null;
