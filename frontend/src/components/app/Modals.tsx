@@ -2,6 +2,8 @@ import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/axios";
 
 interface ModalProps {
   open: boolean;
@@ -49,18 +51,28 @@ function ModalShell({ open, onClose, title, children }: ModalProps) {
 
 export function CreateWorkspaceModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const mutation = useMutation({
+    mutationFn: async (workspaceName: string) => {
+      const { data } = await api.post("/workspace", { name: workspaceName });
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      toast.success(`Workspace "${variables}" created`);
+      setName("");
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] }); // Add your specific query key here
+      onClose();
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || "Failed to create workspace");
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    setLoading(true);
-    console.log("Create workspace:", name);
-    await new Promise((r) => setTimeout(r, 500));
-    toast.success(`Workspace "${name}" created`);
-    setName("");
-    setLoading(false);
-    onClose();
+    mutation.mutate(name);
   };
 
   return (
@@ -79,10 +91,10 @@ export function CreateWorkspaceModal({ open, onClose }: { open: boolean; onClose
         </div>
         <button
           type="submit"
-          disabled={loading || !name.trim()}
+          disabled={mutation.isPending || !name.trim()}
           className="w-full py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
         >
-          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           Create
         </button>
       </form>
@@ -92,18 +104,24 @@ export function CreateWorkspaceModal({ open, onClose }: { open: boolean; onClose
 
 export function CreateChannelModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const mutation = useMutation({
+    mutationFn: async (channelName: string) => {
+      console.log("Create channel:", channelName);
+      await new Promise((r) => setTimeout(r, 500));
+      return channelName;
+    },
+    onSuccess: (channelName) => {
+      toast.success(`Channel #${channelName} created`);
+      setName("");
+      onClose();
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    setLoading(true);
-    console.log("Create channel:", name);
-    await new Promise((r) => setTimeout(r, 500));
-    toast.success(`Channel #${name} created`);
-    setName("");
-    setLoading(false);
-    onClose();
+    mutation.mutate(name);
   };
 
   return (
@@ -122,10 +140,10 @@ export function CreateChannelModal({ open, onClose }: { open: boolean; onClose: 
         </div>
         <button
           type="submit"
-          disabled={loading || !name.trim()}
+          disabled={mutation.isPending || !name.trim()}
           className="w-full py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
         >
-          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           Create
         </button>
       </form>
@@ -135,18 +153,24 @@ export function CreateChannelModal({ open, onClose }: { open: boolean; onClose: 
 
 export function InviteMemberModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const mutation = useMutation({
+    mutationFn: async (memberEmail: string) => {
+      console.log("Invite member:", memberEmail);
+      await new Promise((r) => setTimeout(r, 500));
+      return memberEmail;
+    },
+    onSuccess: (memberEmail) => {
+      toast.success(`Invite sent to ${memberEmail}`);
+      setEmail("");
+      onClose();
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-    setLoading(true);
-    console.log("Invite member:", email);
-    await new Promise((r) => setTimeout(r, 500));
-    toast.success(`Invite sent to ${email}`);
-    setEmail("");
-    setLoading(false);
-    onClose();
+    mutation.mutate(email);
   };
 
   return (
@@ -165,10 +189,10 @@ export function InviteMemberModal({ open, onClose }: { open: boolean; onClose: (
         </div>
         <button
           type="submit"
-          disabled={loading || !email.trim()}
+          disabled={mutation.isPending || !email.trim()}
           className="w-full py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
         >
-          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           Send invite
         </button>
       </form>
