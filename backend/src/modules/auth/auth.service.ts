@@ -113,3 +113,53 @@ export const login = async (
     return { success: false, message: (error as Error).message, statusCode: 500 };
   }
 };
+
+export const signup = async (data: {
+  username: string;
+  email: string;
+  displayName: string;
+  password: string;
+}): Promise<AuthServiceResponse<UserPayload>> => {
+  try {
+    const exists = await prisma.user.findUnique({
+      where: { username: data.username },
+    });
+
+    if (exists) {
+      return { success: false, message: "User already exists", statusCode: 400 };
+    }
+
+    const hashPass = await bcrypt.hash(data.password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        username: data.username,
+        email: data.email,
+        displayName: data.displayName,
+        passwordHash: hashPass,
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        displayName: true,
+        bio: true,
+      },
+    });
+
+    return {
+      success: true,
+      message: "User created successfully",
+      data: {
+        ...user,
+        displayName: user.displayName ?? "",
+        bio: user.bio ?? "",
+      },
+      statusCode: 201
+    };
+  } catch (error) {
+    return { success: false, message: (error as Error).message, statusCode: 500 };
+  }
+};
+
+
