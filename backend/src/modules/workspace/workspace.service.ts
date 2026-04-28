@@ -97,7 +97,7 @@ export const getUserWorkspaces = async(userId: string) => {
                     select: {
                         role: true
                     }
-                }
+                },channels:true
             }
         })
 

@@ -47,7 +47,7 @@ function AppPage() {
   const { data : activeWorkspace } = useQuery({
     queryKey:['workspace',activeWorkspaceId],
     queryFn:async()=>{
-      const {data} = await api.get(`/workspaces/${activeWorkspaceId}`);
+      const {data} = await api.get(`/workspace/${activeWorkspaceId}`);
       return data.data;
     },
     enabled:!!activeWorkspaceId,
