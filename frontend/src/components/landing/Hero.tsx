@@ -122,42 +122,7 @@ export function Hero() {
           transition={{ duration: 0.4, delay: 0.35 }}
           className="mt-12 flex items-center justify-center gap-6"
         >
-          <div className="flex -space-x-2">
-            {["S", "M", "E", "A", "J"].map((l, i) => (
-              <div
-                key={l}
-                className="w-8 h-8 rounded-full border-2 border-background flex items-center justify-center text-[10px] font-semibold"
-                style={{
-                  backgroundColor: [
-                    "oklch(0.55 0.13 185)",  /* teal */
-                    "oklch(0.55 0.13 262)",  /* indigo */
-                    "oklch(0.55 0.15 150)",  /* sage */
-                    "oklch(0.55 0.13 220)",  /* blue-indigo */
-                    "oklch(0.55 0.14 195)",  /* teal-cyan */
-                  ][i],
-                  color: "white",
-                  zIndex: 5 - i,
-                }}
-              >
-                {l}
-              </div>
-            ))}
-          </div>
-          <div className="text-left">
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <svg
-                  key={s}
-                  className="w-3.5 h-3.5"
-                  style={{ color: "oklch(0.62 0.11 185)", fill: "oklch(0.62 0.11 185)" }}
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">Loved by <span className="text-foreground font-medium">2,400+</span> teams</p>
-          </div>
+         
         </motion.div>
 
         {/* Screenshot placeholder */}
@@ -169,7 +134,7 @@ export function Hero() {
         >
           <div className="absolute -inset-4 bg-linear-to-b from-primary/10 via-primary/5 to-transparent rounded-2xl blur-2xl pointer-events-none" />
 
-          <div className="relative rounded-xl border border-border/80 bg-surface overflow-hidden shadow-2xl shadow-black/40 aspect-[16/10]">
+          <div className="relative rounded-xl border border-border/80 bg-surface overflow-hidden shadow-2xl shadow-black/40 aspect-16/10">
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-linear-to-br from-surface to-background">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
                 <ImageIcon className="h-6 w-6 text-primary/70" />

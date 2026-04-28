@@ -49,11 +49,6 @@ export const login = async (
     const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as Secret;
     const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as Secret;
 
-    // DEBUG: Log to check if secrets are actually loaded
-    console.log("JWT_ACCESS_SECRET exists:", !!process.env.JWT_ACCESS_SECRET);
-    console.log("JWT_REFRESH_SECRET exists:", !!process.env.JWT_REFRESH_SECRET);
-    console.log("JWT_ACCESS_SECRET length:", process.env.JWT_ACCESS_SECRET?.length || 0);
-
     // Validate secrets exist before signing
     if (!ACCESS_SECRET || !REFRESH_SECRET) {
       console.error("JWT secrets are missing from environment variables!");
@@ -76,7 +71,7 @@ export const login = async (
       { expiresIn: "7d" }
     );
 
-    console.log("Tokens signed successfully");
+    
 
     const hashedRFT = await bcrypt.hash(refreshToken, 10);
 

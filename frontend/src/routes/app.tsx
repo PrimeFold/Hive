@@ -8,13 +8,14 @@ import { Hexagon } from "lucide-react";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useAuth } from "@/context/auth-context";
 import api from "@/lib/axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery ,useQueryClient} from "@tanstack/react-query";
 
 export const Route = createFileRoute("/app")({
   component: AppPage,
 });
 
 function AppPage() {
+  const queryClient = useQueryClient();
   const { user: currentUser } = useAuth();
   const [members, setMembers] = useState<any[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState("");
@@ -42,13 +43,13 @@ function AppPage() {
 
 
 
-  const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
+  const activeWorkspace = workspaces.find((w:any) => w.id === activeWorkspaceId);
   const activeChannel = activeWorkspace?.channels?.find((c: any) => c.id === activeChannelId) ?? null;
   const activeDM = directMessages.find((dm) => dm.id === activeDMId) ?? null;
 
   const handleSelectWorkspace = (id: string) => {
     setActiveWorkspaceId(id);
-    const ws = workspaces.find((w) => w.id === id);
+    const ws = workspaces.find((w:any) => w.id === id);
     if (ws && ws.channels?.length > 0) {
       setActiveChannelId(ws.channels[0].id);
     } else {
@@ -135,7 +136,9 @@ function AppPage() {
         </div>
       )}
 
-      <CreateWorkspaceModal open={showCreateWorkspace} onClose={() => setShowCreateWorkspace(false)} />
+      <CreateWorkspaceModal open={showCreateWorkspace} onClose={() => setShowCreateWorkspace(false)} onSuccess={()=>{
+        queryClient.invalidateQueries({queryKey:['workspaces']});
+      }}/>
       <CreateChannelModal open={showCreateChannel} onClose={() => setShowCreateChannel(false)} />
       <InviteMemberModal open={showInviteMember} onClose={() => setShowInviteMember(false)} />
     </div>

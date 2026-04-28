@@ -49,19 +49,21 @@ function ModalShell({ open, onClose, title, children }: ModalProps) {
   );
 }
 
-export function CreateWorkspaceModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function CreateWorkspaceModal({ open, onClose ,onSuccess}: { open: boolean; onClose: () => void ; onSuccess:()=> void}) {
   const [name, setName] = useState("");
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (workspaceName: string) => {
       const { data } = await api.post("/workspace", { name: workspaceName });
+      console.log("API response:", data);
       return data;
     },
     onSuccess: (_, variables) => {
       toast.success(`Workspace "${variables}" created`);
       setName("");
       queryClient.invalidateQueries({ queryKey: ["workspaces"] }); 
+      onSuccess?.();
       onClose();
     },
     onError: (error: any) => {

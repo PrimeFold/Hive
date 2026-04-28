@@ -19,18 +19,12 @@ const features = [
   },
 ];
 
-const stats = [
-  { value: "99.9%", label: "Uptime" },
-  { value: "<50ms", label: "Latency" },
-  { value: "2,400+", label: "Teams" },
-  { value: "10M+", label: "Messages/day" },
-];
 
 export function Features() {
   return (
     <section className="py-24 px-6 relative">
       {/* Section divider gradient */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-border to-transparent" />
 
       <div className="max-w-5xl mx-auto">
         {/* Section header */}
@@ -61,7 +55,7 @@ export function Features() {
               className="group relative rounded-xl border border-border bg-surface p-6 hover:border-primary/30 transition-all hover:-translate-y-0.5"
             >
               {/* Hover glow */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              <div className="absolute inset-0 rounded-xl bg-linear-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
               <div className="relative">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <f.icon className="h-5 w-5 text-primary" />
@@ -72,29 +66,6 @@ export function Features() {
             </motion.div>
           ))}
         </div>
-
-        {/* Stats bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }}
-          className="mt-16 rounded-xl border border-border bg-surface/50 p-1"
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4">
-            {stats.map((s, i) => (
-              <div
-                key={s.label}
-                className={`flex flex-col items-center py-6 ${
-                  i < stats.length - 1 ? "border-r border-border/50" : ""
-                }`}
-              >
-                <span className="text-2xl font-bold text-foreground">{s.value}</span>
-                <span className="text-xs text-muted-foreground mt-1">{s.label}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </div>
     </section>
   );
