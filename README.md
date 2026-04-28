@@ -17,7 +17,7 @@ Frontend builds successfully for production.
 
 ## Tech Stack
 
-- Backend: Node.js, TypeScript, Express, Prisma, PostgreSQL, Redis, Socket.IO
+- Backend: Node.js, Express ,TypeScript, Express, Prisma, PostgreSQL, Redis, Socket.IO
 - Frontend: React 19, Vite, TanStack Router, TanStack Query, Tailwind, Radix UI
 
 ## Repository Structure
