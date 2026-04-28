@@ -40,16 +40,25 @@ function AppPage() {
     },
   });
 
-
-
-
-  const activeWorkspace = workspaces.find((w:any) => w.id === activeWorkspaceId);
-  const activeChannel = activeWorkspace?.channels?.find((c: any) => c.id === activeChannelId) ?? null;
+  
   const activeDM = directMessages.find((dm) => dm.id === activeDMId) ?? null;
+
+
+  const { data : activeWorkspace } = useQuery({
+    queryKey:['workspace',activeWorkspaceId],
+    queryFn:async()=>{
+      const {data} = await api.get(`/workspaces/${activeWorkspaceId}`);
+      return data.data;
+    },
+    enabled:!!activeWorkspaceId,
+  })
+  const activeChannel = activeWorkspace?.channels?.find((c: any) => c.id === activeChannelId) ?? null;
+
 
   const handleSelectWorkspace = (id: string) => {
     setActiveWorkspaceId(id);
     const ws = workspaces.find((w:any) => w.id === id);
+    console.log("selected workspace:", ws); 
     if (ws && ws.channels?.length > 0) {
       setActiveChannelId(ws.channels[0].id);
     } else {
