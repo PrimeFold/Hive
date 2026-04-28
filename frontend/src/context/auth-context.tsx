@@ -11,6 +11,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  isLoading:boolean;
   isAuthenticated: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
@@ -21,7 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-
+  const [isLoading , setIsLoading] = useState(true);
   // Computed value: if we have a user, they are authenticated
   const isAuthenticated = !!user;
 
@@ -54,11 +55,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const checkExistingSession = async()=>{
       try {
         const {data} = await api.post('/auth/refresh')
-        
         login(data.accessToken,data.user)
 
       } catch (error) {
         console.log("No active sessions found..")
+      }finally{
+        setIsLoading(false)
       }
     }
     checkExistingSession();
@@ -66,7 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   },[])
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, isLoading ,isAuthenticated, login, logout, updateUser  }}>
       {children}
     </AuthContext.Provider>
   );

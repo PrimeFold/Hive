@@ -4,7 +4,7 @@ import { WorkspaceSidebar } from "@/components/app/WorkspaceSidebar";
 import { ChannelSidebar } from "@/components/app/ChannelSidebar";
 import { ChatArea } from "@/components/app/ChatArea";
 import { CreateWorkspaceModal, CreateChannelModal, InviteMemberModal } from "@/components/app/Modals";
-import { Hexagon } from "lucide-react";
+import { Hexagon, Loader2 } from "lucide-react";
 import { EmptyState } from "@/components/app/EmptyState";
 import { useAuth } from "@/context/auth-context";
 import api from "@/lib/axios";
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/app")({
 
 function AppPage() {
   const queryClient = useQueryClient();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser ,isLoading} = useAuth();
   const [members, setMembers] = useState<any[]>([]);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState("");
   const [activeChannelId, setActiveChannelId] = useState("");
@@ -27,6 +27,12 @@ function AppPage() {
   const [showCreateWorkspace, setShowCreateWorkspace] = useState(false);
   const [showCreateChannel, setShowCreateChannel] = useState(false);
   const [showInviteMember, setShowInviteMember] = useState(false);
+  
+  if(isLoading){{
+    return <div className="h-screen flex items-center justify-center">
+      <Loader2 className="h-5 w-5 animate-spin" />
+    </div>;
+  }}
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
