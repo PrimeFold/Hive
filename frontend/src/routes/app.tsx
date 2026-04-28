@@ -35,7 +35,7 @@ function AppPage() {
   const { data: workspaces = [] } = useQuery({
   queryKey: ["workspaces"],
     queryFn: async () => {
-      const { data } = await api.get("/workspace");
+      const { data } = await api.get("/workspaces");
       return data;
     },
   });
