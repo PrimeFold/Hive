@@ -107,79 +107,83 @@ export function ProfileMenu() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="relative w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary hover:rounded-2xl transition-all"
+            className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 hover:from-primary/30 hover:to-primary/20 flex items-center justify-center text-sm font-bold text-primary transition-all hover:shadow-md group"
             aria-label="Profile menu"
             title={`${user.username} profile menu`}
           >
             {initial}
-            <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-background shadow-sm" />
+            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-background shadow-md group-hover:shadow-lg transition-shadow" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent side="right" align="end" className="w-56">
-          <DropdownMenuLabel className="text-xs leading-tight">
-            <div className="font-semibold text-foreground">{user.username}</div>
-            <div className="text-muted-foreground font-normal">{user.email}</div>
+        <DropdownMenuContent side="right" align="end" className="w-56 rounded-lg">
+          <DropdownMenuLabel className="text-xs leading-relaxed py-3">
+            <div className="font-bold text-foreground">{user.username}</div>
+            <div className="text-muted-foreground/70 font-normal text-xs mt-1">{user.email}</div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={openProfileDialog}>
-            <UserPen className="h-4 w-4" />
-            Edit profile
+          <DropdownMenuItem onClick={openProfileDialog} className="cursor-pointer">
+            <UserPen className="h-4 w-4 mr-2" />
+            <span>Edit profile</span>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={handleLogout}
             disabled={loggingOut}
-            className="text-red-500 focus:text-red-500"
+            className="text-red-500 focus:text-red-500 cursor-pointer"
           >
-            {loggingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-            Logout
+            {loggingOut ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <LogOut className="h-4 w-4 mr-2" />
+            )}
+            <span>Logout</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
-            <DialogDescription>Update account details used in Hive.</DialogDescription>
+            <DialogTitle className="text-lg">Edit profile</DialogTitle>
+            <DialogDescription>Update your account details</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Username</label>
+              <label className="block text-sm font-semibold text-foreground mb-2">Username</label>
               <input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                className="w-full px-3.5 py-2.5 text-sm rounded-lg bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent transition-all"
                 placeholder="username"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+              <label className="block text-sm font-semibold text-foreground mb-2">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
+                className="w-full px-3.5 py-2.5 text-sm rounded-lg bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent transition-all"
                 placeholder="you@example.com"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">New password</label>
+              <label className="block text-sm font-semibold text-foreground mb-2">New password (optional)</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors"
-                placeholder="Leave blank to keep current password"
+                className="w-full px-3.5 py-2.5 text-sm rounded-lg bg-secondary/40 border border-border/50 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent transition-all"
+                placeholder="Leave blank to keep current"
               />
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <button
               type="button"
               onClick={() => setDialogOpen(false)}
-              className="px-3 py-2 text-sm rounded-lg border border-border bg-background hover:bg-accent transition-colors"
+              className="px-4 py-2.5 text-sm font-medium rounded-lg border border-border/50 bg-background hover:bg-secondary/30 transition-colors"
             >
               Cancel
             </button>
@@ -187,7 +191,7 @@ export function ProfileMenu() {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-3 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors inline-flex items-center gap-2"
+              className="px-4 py-2.5 text-sm font-medium rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 transition-all inline-flex items-center gap-2 shadow-md hover:shadow-lg"
             >
               {saving && <Loader2 className="h-4 w-4 animate-spin" />}
               Save changes

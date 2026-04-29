@@ -1,4 +1,4 @@
-import { Search, Paperclip, ArrowUp, MessageSquare, Hash } from "lucide-react";
+import { Search, Paperclip, Send, MessageSquare, Hash } from "lucide-react";
 import { useState } from "react";
 import { MessageList } from "./MessageList";
 import { TypingIndicator } from "./TypingIndicator";
@@ -6,6 +6,7 @@ import { EmptyState } from "./EmptyState";
 import { useDM } from "@/hooks/use-dm";
 import { getMember } from "@/lib/get-member";
 import { useChannel } from "@/hooks/use-channel";
+import { motion } from "framer-motion";
 
 type Channel = {
   id: string;
@@ -61,7 +62,7 @@ export function ChatArea({ conversation, type }: Props) {
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
-    
+
     sendMessage(message);
     setMessage("");
   };
@@ -73,35 +74,40 @@ export function ChatArea({ conversation, type }: Props) {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-background min-w-0">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between gap-4">
-        <div className="flex items-center gap-1.5 min-w-0">
-          {isDM ? (
-            <MessageSquare className="h-4 w-4 text-muted-foreground shrink-0" />
-          ) : (
-            <Hash className="h-4 w-4 text-muted-foreground shrink-0" />
-          )}
+    <div className="flex-1 flex flex-col bg-background/50 min-w-0">
+      {/* Modern Header */}
+      <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between gap-4 bg-gradient-to-r from-background to-background/80 backdrop-blur-sm">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={`p-2 rounded-lg ${isDM ? "bg-blue-500/10 text-blue-600" : "bg-purple-500/10 text-purple-600"}`}>
+            {isDM ? (
+              <MessageSquare className="h-4 w-4" />
+            ) : (
+              <Hash className="h-4 w-4" />
+            )}
+          </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground truncate">
+            <p className="text-sm font-bold text-foreground truncate">
               {title}
             </p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-muted-foreground/70 truncate">
               {isDM
-                ? `Direct message with ${recipient?.displayName}`
-                : `Channel #${title}`}
+                ? `Direct conversation`
+                : `Channel conversation`}
             </p>
           </div>
         </div>
 
-        <div className="relative hidden sm:block">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+        <motion.div
+          className="relative hidden sm:flex items-center"
+          whileHover={{ scale: 1.02 }}
+        >
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
           <input
             type="text"
-            placeholder="Search messages..."
-            className="pl-8 pr-3 py-1.5 text-xs rounded-lg bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-48 transition-all"
+            placeholder="Search..."
+            className="pl-9 pr-4 py-2 text-xs rounded-lg bg-secondary/40 border border-border/30 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:bg-secondary transition-all"
           />
-        </div>
+        </motion.div>
       </div>
 
       {/* Messages */}
@@ -121,25 +127,30 @@ export function ChatArea({ conversation, type }: Props) {
         )}
       </div>
 
-      {/* Typing Indicator: Show if the recipient is in the typingUsers array */}
-      <div className="px-4 h-6">
-         {isDM && recipientId && typingUsers.includes(recipientId) && (
-           <TypingIndicator username={recipient?.displayName ?? "Someone"} />
-         )}
-      </div>
+      {/* Typing Indicator */}
+      <motion.div
+        className="px-6 h-7"
+        animate={{ opacity: typingUsers.includes(recipientId ?? "") ? 1 : 0 }}
+      >
+        {isDM && recipientId && typingUsers.includes(recipientId) && (
+          <TypingIndicator username={recipient?.displayName ?? "Someone"} />
+        )}
+      </motion.div>
 
-      {/* Input */}
-      <div className="px-4 pb-4">
+      {/* Message Input Area */}
+      <div className="px-6 pb-6 pt-2">
         <form
           onSubmit={handleSend}
-          className="flex items-center gap-2 bg-secondary rounded-xl px-4 py-2.5 border border-border focus-within:border-primary/50 transition-all"
+          className="flex items-end gap-3 bg-secondary/30 rounded-xl px-4 py-3 border border-border/40 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/40 transition-all backdrop-blur-sm"
         >
-          <button
+          <motion.button
             type="button"
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-secondary rounded-lg flex-shrink-0"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Paperclip className="h-4 w-4" />
-          </button>
+            <Paperclip className="h-5 w-5" />
+          </motion.button>
 
           <input
             type="text"
@@ -148,19 +159,22 @@ export function ChatArea({ conversation, type }: Props) {
             placeholder={
               isDM
                 ? `Message ${recipient?.displayName}`
-                : `Message #${title}`
+                : `Say something in #${title}`
             }
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none max-h-24 py-1"
           />
 
-          <button
+          <motion.button
             type="submit"
             disabled={!message.trim()}
-            className="w-8 h-8 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30 transition-colors flex items-center justify-center"
+            className="w-9 h-9 rounded-lg bg-primary/90 hover:bg-primary text-primary-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center flex-shrink-0 shadow-md hover:shadow-lg"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <ArrowUp className="h-4 w-4" />
-          </button>
+            <Send className="h-4 w-4" />
+          </motion.button>
         </form>
+        <p className="text-xs text-muted-foreground/50 mt-2">Press Enter to send</p>
       </div>
     </div>
   );
