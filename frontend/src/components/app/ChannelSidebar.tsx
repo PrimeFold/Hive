@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Hash, Plus, Settings, Search, MessageCircle2 } from "lucide-react";
+import { Hash, Plus, Settings, Search, Mail } from "lucide-react";
 import { getMember } from "@/lib/get-member";
 import { formatTime } from "@/lib/utils";
 import { usePresence } from "@/hooks/use-presence";
@@ -125,7 +125,7 @@ export function ChannelSidebar({
         <div>
           <div className="flex items-center justify-between mb-3 px-4">
             <div className="flex items-center gap-2">
-              <MessageCircle2 className="h-3.5 w-3.5 text-muted-foreground/50" />
+              <Mail className="h-3.5 w-3.5 text-muted-foreground/50" />
               <span className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">Messages</span>
             </div>
             <motion.button
