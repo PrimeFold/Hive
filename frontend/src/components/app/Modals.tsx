@@ -104,19 +104,20 @@ export function CreateWorkspaceModal({ open, onClose ,onSuccess}: { open: boolea
   );
 }
 
-export function CreateChannelModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function CreateChannelModal({ open, onClose, workspaceId }: { open: boolean; onClose: () => void; workspaceId: string }) {
   const [name, setName] = useState("");
   const queryClient = useQueryClient();
-
+  
   const mutation = useMutation({
     mutationFn: async (channelName: string) => {
-      const { data } = await api.post("/channels", { name: channelName });
+      const { data } = await api.post(`/channels/${workspaceId}`, { name: channelName });
       return data;
     },
     onSuccess: (_, variables) => {
       toast.success(`Channel #${variables} created`);
       setName("");
       queryClient.invalidateQueries({ queryKey: ["channels"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       onClose();
     },
     onError: (error: any) => {
@@ -157,19 +158,29 @@ export function CreateChannelModal({ open, onClose }: { open: boolean; onClose: 
   );
 }
 
-export function InviteMemberModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function InviteMemberModal({
+  open,
+  onClose,
+  workspaceId,
+}: {
+  open: boolean;
+  onClose: () => void;
+  workspaceId: string;
+}) {
   const [email, setEmail] = useState("");
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async (memberEmail: string) => {
-      // Adjust the endpoint to match your exact backend invite route
-      const { data } = await api.post("/workspace/invite", { email: memberEmail });
+     
+      const { data } = await api.post(`/workspace/${workspaceId}/member`, { email: memberEmail });
       return data;
     },
     onSuccess: (_, variables) => {
       toast.success(`Invite sent to ${variables}`);
       setEmail("");
+   
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       onClose();
     },
     onError: (error: any) => {
