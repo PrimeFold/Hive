@@ -74,25 +74,25 @@ export function ChatArea({ conversation, type }: Props) {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-background/50 min-w-0">
+    <div className="flex-1 flex flex-col bg-background min-w-0">
       {/* Modern Header */}
-      <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between gap-4 bg-gradient-to-r from-background to-background/80 backdrop-blur-sm">
+      <div className="px-6 py-4 border-b border-border/30 flex items-center justify-between gap-4 bg-surface/40 backdrop-blur-sm">
         <div className="flex items-center gap-3 min-w-0">
-          <div className={`p-2 rounded-lg ${isDM ? "bg-blue-500/10 text-blue-600" : "bg-purple-500/10 text-purple-600"}`}>
+          <div className={`p-2.5 rounded-lg transition-colors ${isDM ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"}`}>
             {isDM ? (
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="h-5 w-5" />
             ) : (
-              <Hash className="h-4 w-4" />
+              <Hash className="h-5 w-5" />
             )}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-foreground truncate">
+            <p className="text-base font-bold text-foreground truncate">
               {title}
             </p>
-            <p className="text-xs text-muted-foreground/70 truncate">
+            <p className="text-xs text-muted-foreground/60 truncate">
               {isDM
-                ? `Direct conversation`
-                : `Channel conversation`}
+                ? `Direct message`
+                : `Workspace channel`}
             </p>
           </div>
         </div>
