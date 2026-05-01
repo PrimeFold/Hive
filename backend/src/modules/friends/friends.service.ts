@@ -7,7 +7,6 @@ export const getUserByDisplayName = async (displayName:string)=>{
             select:{
                 displayName:true,
                 bio:true,
-
             }
         })
 
