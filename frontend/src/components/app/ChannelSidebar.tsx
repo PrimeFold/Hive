@@ -40,9 +40,6 @@ export function ChannelSidebar({
     <div className="bg-surface flex flex-col h-full overflow-hidden">
       {/* Header - Hidden on mobile since it's in the top bar */}
       <div className="hidden sm:flex px-5 py-4 border-b border-border/30 items-center justify-between shrink-0">
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wide">Channels & Messages</p>
-        </div>
         <button className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-secondary/50 rounded-lg shrink-0">
           <Settings className="h-4 w-4" />
         </button>
