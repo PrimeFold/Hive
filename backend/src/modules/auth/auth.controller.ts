@@ -141,6 +141,8 @@ export const generateRefreshToken:Handler = async(req,res)=>{
     }
 
     const stored = await AuthService.storeNewTokenInDB(newRefreshToken,userId)
+    console.log('stored:', stored.success, stored.message);
+    console.log('sending response with accessToken:', !!newAccessToken);
     if(!stored.success){
         return res.status(500).json({
             message:stored.message

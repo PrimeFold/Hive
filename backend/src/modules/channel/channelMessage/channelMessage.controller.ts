@@ -11,7 +11,8 @@ export const createChannelMessage: Handler = async (req, res) => {
     });
   }
 
-  const { content, userId } = req.body;
+  const { content} = req.body;
+  const userId = req.user?.id;
   
   if (!content) {
     return res.status(400).json({
@@ -45,36 +46,21 @@ export const createChannelMessage: Handler = async (req, res) => {
   });
 };
 
-export const getChannelMessageById: Handler = async (req, res) => {
-  const rawChannelId = req.params.channelId;
-  const rawMessageId = req.params.messageId;
-  
-  const channelId = Array.isArray(rawChannelId) ? rawChannelId[0] : rawChannelId;
-  const messageId = Array.isArray(rawMessageId) ? rawMessageId[0] : rawMessageId;
-  
+export const getAllChannelMessages: Handler = async (req, res) => {
+  const channelId = req.params.id; 
+
   if (!channelId) {
-    return res.status(400).json({
-      message: "Channel id is required",
-    });
+    return res.status(400).json({ message: "Channel id is required" });
   }
 
-  if (!messageId) {
-    return res.status(400).json({
-      message: "Message id is required",
-    });
-  }
-
-  const response = await ChannelMessageService.getMessageById(channelId, messageId);
+  const response = await ChannelMessageService.getMessagesByChannelID(channelId as string);
   const statusCode = response.statusCode || 500;
 
   if (!response.success) {
-    return res.status(statusCode).json({
-      message: response.message,
-    });
+    return res.status(statusCode).json({ message: response.message });
   }
 
-  return res.status(statusCode).json({
-    message: response.message,
-    data: response.data,
-  });
+  return res.status(statusCode).json({ message: response.message, data: response.data });
 };
+
+

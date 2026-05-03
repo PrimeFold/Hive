@@ -1,4 +1,4 @@
-import { useChannel } from '#/hooks/use-channel'
+import { useChannel } from '@/hooks/use-channel'
 import { ChatHeader } from '@/components/chat/ChatHeader'
 import { ChatInput } from '@/components/chat/ChatInput'
 import { MessageList } from '@/components/chat/MessageList'

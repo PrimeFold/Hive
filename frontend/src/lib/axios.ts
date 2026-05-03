@@ -48,7 +48,7 @@ api.interceptors.response.use(
                         originalRequest._retry = true;
                         const response = await refreshToken();
 
-                        const newAccessToken = response.data.accessToken;
+                        const newAccessToken = response.accessToken;
                         originalRequest.headers = originalRequest.headers || {};
                         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
                         setAccessToken(newAccessToken);
