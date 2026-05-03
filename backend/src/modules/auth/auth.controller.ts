@@ -110,6 +110,7 @@ export const generateRefreshToken:Handler = async(req,res)=>{
         break;
       }
     }
+    console.log('matchedTokenId:', matchedTokenId);
     if(!matchedTokenId){
       return res.status(401).json({
           message:"Unauthorized.."
