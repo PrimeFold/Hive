@@ -4,6 +4,7 @@ import { Mail, Lock } from "lucide-react";
 import { login as loginAPI} from "@/lib/auth";
 import { GlowButton } from "@/components/auth/GlowButton";
 import { useMutation } from "@tanstack/react-query";
+import { router } from "@/utils/router";
 
 export const Route = createFileRoute("/signin")({
   component: SignInPage,
@@ -33,6 +34,7 @@ function SignInPage() {
     onSuccess: (data) => {
       console.log('login data :',data)
       auth?.login(data.accessToken,data.user);
+      router.invalidate();
       navigate({ to: "/App" });
       setEmail("");
       setPassword("");
