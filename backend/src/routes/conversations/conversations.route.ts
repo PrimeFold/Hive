@@ -9,7 +9,7 @@ const conversationLimiter = Limiter({
   message: "Too many conversation requests from this IP. Please try again later.",
 });
 
-router.post('/conversation', AuthMiddleware, conversationLimiter, ConversationController.createConversation)
+router.post('/conversation/:id', AuthMiddleware, conversationLimiter, ConversationController.createConversation)
 router.get('/conversation', AuthMiddleware, ConversationController.getAllConversations)
 router.get('/conversation/:id', AuthMiddleware, ConversationController.getConversationByID);
 router.delete('/conversation/:id', AuthMiddleware, conversationLimiter, ConversationController.deleteConversation)

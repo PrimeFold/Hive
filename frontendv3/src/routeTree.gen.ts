@@ -12,9 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWorkspaceIdRouteImport } from './routes/app.$workspaceId'
+import { Route as AppDmConversationIdRouteImport } from './routes/app.dm.$conversationId'
 import { Route as AppWorkspaceIdChannelIdRouteImport } from './routes/app.$workspaceId.$channelId'
 
 const SignupRoute = SignupRouteImport.update({
@@ -32,11 +32,6 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -47,6 +42,11 @@ const AppWorkspaceIdRoute = AppWorkspaceIdRouteImport.update({
   path: '/$workspaceId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDmConversationIdRoute = AppDmConversationIdRouteImport.update({
+  id: '/dm/$conversationId',
+  path: '/dm/$conversationId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppWorkspaceIdChannelIdRoute = AppWorkspaceIdChannelIdRouteImport.update({
   id: '/$channelId',
   path: '/$channelId',
@@ -55,65 +55,64 @@ const AppWorkspaceIdChannelIdRoute = AppWorkspaceIdChannelIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
   '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
+  '/app/dm/$conversationId': typeof AppDmConversationIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
   '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
+  '/app/dm/$conversationId': typeof AppDmConversationIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
   '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
+  '/app/dm/$conversationId': typeof AppDmConversationIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/app'
     | '/forgot-password'
     | '/signin'
     | '/signup'
     | '/app/$workspaceId'
     | '/app/$workspaceId/$channelId'
+    | '/app/dm/$conversationId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app'
     | '/forgot-password'
     | '/signin'
     | '/signup'
     | '/app/$workspaceId'
     | '/app/$workspaceId/$channelId'
+    | '/app/dm/$conversationId'
   id:
     | '__root__'
     | '/'
-    | '/app'
     | '/forgot-password'
     | '/signin'
     | '/signup'
     | '/app/$workspaceId'
     | '/app/$workspaceId/$channelId'
+    | '/app/dm/$conversationId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
@@ -142,13 +141,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -163,6 +155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWorkspaceIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/dm/$conversationId': {
+      id: '/app/dm/$conversationId'
+      path: '/dm/$conversationId'
+      fullPath: '/app/dm/$conversationId'
+      preLoaderRoute: typeof AppDmConversationIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/$workspaceId/$channelId': {
       id: '/app/$workspaceId/$channelId'
       path: '/$channelId'
@@ -173,31 +172,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AppWorkspaceIdRouteChildren {
-  AppWorkspaceIdChannelIdRoute: typeof AppWorkspaceIdChannelIdRoute
-}
-
-const AppWorkspaceIdRouteChildren: AppWorkspaceIdRouteChildren = {
-  AppWorkspaceIdChannelIdRoute: AppWorkspaceIdChannelIdRoute,
-}
-
-const AppWorkspaceIdRouteWithChildren = AppWorkspaceIdRoute._addFileChildren(
-  AppWorkspaceIdRouteChildren,
-)
-
-interface AppRouteChildren {
-  AppWorkspaceIdRoute: typeof AppWorkspaceIdRouteWithChildren
-}
-
-const AppRouteChildren: AppRouteChildren = {
-  AppWorkspaceIdRoute: AppWorkspaceIdRouteWithChildren,
-}
-
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,

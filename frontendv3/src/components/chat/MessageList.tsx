@@ -2,16 +2,19 @@ import { motion } from "framer-motion";
 import { MessageBubble } from "./MessageBubble";
 import { useQuery } from "@tanstack/react-query";
 import { getMessagesByChannelId } from "#/lib/message";
+import { getDirectMessages } from "#/lib/direct-messages";
 
 interface messageListProps {
-  channelId:string;
+  id:string;
   typingUsers: string[];
+  mode:'channel' | 'dm'
+
 }
 
-export function MessageList({channelId,typingUsers}:messageListProps) {
-  const {data:messages = [],isLoading} = useQuery({
-    queryKey:['messages'],
-    queryFn:()=>getMessagesByChannelId(channelId)
+export function MessageList({id,typingUsers,mode}:messageListProps) {
+  const {data:messages = []} = useQuery({
+    queryKey: [mode === 'channel' ? 'messages' : 'dm', id],
+    queryFn:()=> mode === 'channel' ? getMessagesByChannelId(id) : getDirectMessages(id)
   })
 
   return (

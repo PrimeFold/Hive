@@ -96,6 +96,19 @@ export const getAllConversations = async(userId:string)=>{
                     {participantOneId:userId},
                     {participantTwoId:userId}
                 ]
+            },
+            include:{
+                participantOne: {
+                  select: { id: true, displayName: true, username: true },
+                },
+                participantTwo: {
+                  select: { id: true, displayName: true, username: true },
+                },
+                messages: {
+                  orderBy: { createdAt: 'desc' },
+                  take: 1, 
+                  select: { content: true, createdAt: true },
+                },
             }
         })
 

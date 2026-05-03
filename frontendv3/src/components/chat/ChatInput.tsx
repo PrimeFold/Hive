@@ -4,19 +4,31 @@ import { socket } from "@/hooks/use-socket";
 
 
 interface ChatInputProps {
-  channelId: string;
-
+  mode : 'channel' | 'dm'
+  id: string;
 }
 
-export function ChatInput({ channelId }: ChatInputProps) {
+export function ChatInput({ id ,mode}: ChatInputProps) {
   const [value, setValue] = useState("");
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sendMessage = () => {
     if (!value.trim()) return;
-    socket.emit('send_channel_message', channelId, value.trim());
-    setValue("");
-    socket.emit('channel_typing_stop', channelId);
+    
+    if(mode==='channel'){
+      socket.emit('send_channel_message', id, value.trim());
+    }else{
+      socket.emit('new_dm',id,value.trim())
+    }
+    
+    if (mode === 'channel') {
+      socket.emit('channel_typing_start', id);
+      setValue('')
+    } else {
+      socket.emit('typing_start', id);
+    }
+
+ 
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -33,10 +45,10 @@ export function ChatInput({ channelId }: ChatInputProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value);
-    socket.emit('channel_typing_start', channelId);
+    socket.emit('channel_typing_start', id);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
-      socket.emit('channel_typing_stop', channelId);
+      socket.emit('channel_typing_stop', id);
     }, 2000);
   };
 

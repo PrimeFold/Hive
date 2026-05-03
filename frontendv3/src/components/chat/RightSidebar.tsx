@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { conversations, friends, friendRequests, type Friend } from "./mockData";
 import {
   ChevronRight,
   ChevronLeft,
@@ -15,20 +14,26 @@ import {
   Phone,
   MessageSquare,
 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { acceptFriendRequest, getFriends, getPendingRequests, rejectFriendRequest, searchUser, sendFriendRequest } from "@/lib/friend";
+import type { Friend } from "@/types/friends";
+import { createConversation, getAllConversations } from "@/lib/conversation";
+import { useAuth } from "@/context/authContext";
+import { useNavigate } from "@tanstack/react-router";
 
 type Tab = "conversations" | "friends" | "add";
 
-const statusRing: Record<Friend["status"], string> = {
-  online: "bg-emerald-400 shadow-[0_0_8px_oklch(0.75_0.18_150)]",
-  idle: "bg-amber-400",
-  dnd: "bg-rose-400",
-  offline: "bg-zinc-500",
-};
 
 export function RightSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState<Tab>("conversations");
 
+  const {data:pendingRequest=[]}= useQuery({
+    queryKey:['friends','pending'],
+    queryFn:getPendingRequests
+  }) 
+
+ 
   return (
     <motion.aside
       animate={{ width: collapsed ? 56 : 320 }}
@@ -45,19 +50,19 @@ export function RightSidebar() {
       </button>
 
       {collapsed ? (
-        <CollapsedRail tab={tab} onPick={(t) => { setTab(t); setCollapsed(false); }} />
+        <CollapsedRail tab={tab} onPick={(t) => { setTab(t); setCollapsed(false); }} pendingCount={pendingRequest.length} />
       ) : (
-        <ExpandedPanel tab={tab} setTab={setTab} />
+        <ExpandedPanel tab={tab} setTab={setTab}/>
       )}
     </motion.aside>
   );
 }
 
-function CollapsedRail({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) {
+function CollapsedRail({ tab, onPick , pendingCount }: { tab: Tab; onPick: (t: Tab) => void ;pendingCount: number; }) {
   const items: { id: Tab; icon: typeof MessageCircle; label: string; badge?: number }[] = [
     { id: "conversations", icon: MessageCircle, label: "Conversations", badge: 2 },
     { id: "friends", icon: Users, label: "Friends" },
-    { id: "add", icon: UserPlus, label: "Add Friends", badge: friendRequests.length },
+    { id: "add", icon: UserPlus, label: "Add Friends", badge: pendingCount },
   ];
   return (
     <div className="flex flex-col items-center gap-2 pt-6 px-2">
@@ -91,7 +96,7 @@ function CollapsedRail({ tab, onPick }: { tab: Tab; onPick: (t: Tab) => void }) 
   );
 }
 
-function ExpandedPanel({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
+function ExpandedPanel({ tab, setTab  }: { tab: Tab; setTab: (t: Tab) => void ; }) {
   const tabs: { id: Tab; label: string; icon: typeof MessageCircle }[] = [
     { id: "conversations", label: "Chats", icon: MessageCircle },
     { id: "friends", label: "Friends", icon: Users },
@@ -144,7 +149,7 @@ function ExpandedPanel({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) 
           >
             {tab === "conversations" && <ConversationsTab />}
             {tab === "friends" && <FriendsTab />}
-            {tab === "add" && <AddFriendsTab />}
+            {tab === "add" && <AddFriendsTab/>}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -153,73 +158,87 @@ function ExpandedPanel({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) 
 }
 
 function ConversationsTab() {
+  
+  const { user } = useAuth();
+  const { data: conversations = [], isLoading } = useQuery({
+    queryKey: ['conversations'],
+    queryFn: getAllConversations,
+  });
+
+  const otherParticipant = (c: any) =>
+    c.participantOne.id === user?.id ? c.participantTwo : c.participantOne;
+
+  const lastMessage = (c: any) => c.messages?.[0]?.content ?? "";
+
+  const navigate = useNavigate();
+
   return (
     <ul className="space-y-1">
-      {conversations.map((c) => (
-        <li key={c.id}>
-          <button className="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-white/[0.05] transition-colors text-left">
-            <div className="relative shrink-0">
-              <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${c.avatarColor}`} />
-              <span className={cn(
-                "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-[oklch(0.16_0.005_270)]",
-                statusRing[c.status]
-              )} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-[13px] font-medium truncate">{c.name}</span>
-                <span className="text-[10px] text-muted-foreground/70 shrink-0">{c.timestamp}</span>
+      {conversations.map((c: any) => {
+        const other = otherParticipant(c);
+        return (
+          <li key={c.id}>
+            <button onClick={()=> navigate({to:'/app/dm/$conversationId',params:{conversationId:c.id}})} className="w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-white/[0.05] transition-colors text-left">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary/40 to-fuchsia-400/40 flex items-center justify-center text-[11px] font-semibold shrink-0">
+                {other.displayName?.charAt(0).toUpperCase()}
               </div>
-              <p className="text-[11.5px] text-muted-foreground/80 truncate mt-0.5">{c.lastMessage}</p>
-            </div>
-            {c.unread ? (
-              <span className="ml-1 shrink-0 min-w-[18px] h-[18px] px-1.5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
-                {c.unread}
-              </span>
-            ) : null}
-          </button>
-        </li>
-      ))}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[13px] font-medium truncate">{other.displayName}</span>
+                </div>
+                <p className="text-[11.5px] text-muted-foreground/80 truncate mt-0.5">{lastMessage(c)}</p>
+              </div>
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }
 
 function FriendsTab() {
-  const online = friends.filter((f) => f.status !== "offline");
-  const offline = friends.filter((f) => f.status === "offline");
+   const {data:friends=[]}=useQuery({
+    queryKey:['friends'],
+    queryFn:getFriends
+  })
+
+  //const online = friends.filter((f) => f.status !== "offline");
+  //const offline = friends.filter((f) => f.status === "offline");
 
   return (
     <div className="space-y-5">
-      <Section label={`Online — ${online.length}`}>
-        {online.map((f) => (
-          <FriendRow key={f.id} friend={f} />
-        ))}
-      </Section>
-      <Section label={`Offline — ${offline.length}`}>
-        {offline.map((f) => (
-          <FriendRow key={f.id} friend={f} dim />
-        ))}
-      </Section>
-    </div>
+    <Section label={`Friends — ${friends.length}`}>
+      {friends.map((f: any) => (
+        <FriendRow key={f.id} friend={f} />
+      ))}
+    </Section>
+  </div>
   );
 }
 
 function FriendRow({ friend, dim }: { friend: Friend; dim?: boolean }) {
+  const navigate = useNavigate();
+
+  const {mutate:startConversation} = useMutation({
+    mutationFn:(id:string)=>createConversation(id),
+    onSuccess:(data)=>{
+      navigate({to:"/app/dm/$conversationId",params:{conversationId:data.id}})
+    }
+  })
+
+ 
+
   return (
     <div className={cn("group flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-white/[0.05] transition-colors", dim && "opacity-60")}>
-      <div className="relative shrink-0">
-        <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${friend.avatarColor}`} />
-        <span className={cn(
-          "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-[oklch(0.16_0.005_270)]",
-          statusRing[friend.status]
-        )} />
-      </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-medium truncate">{friend.name}</div>
-        <div className="text-[11px] text-muted-foreground/80 truncate">{friend.activity || friend.handle}</div>
+        <div className="text-[13px] font-medium truncate">{friend.displayName}</div>
+        <div className="text-[11px] text-muted-foreground/80 truncate">{friend.username}</div>
       </div>
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <IconBtn><MessageSquare className="h-3.5 w-3.5" /></IconBtn>
+        <button onClick={()=>startConversation(friend.id)}>
+          <IconBtn><MessageSquare className="h-3.5 w-3.5" /></IconBtn>
+        </button>
+        
         <IconBtn><Phone className="h-3.5 w-3.5" /></IconBtn>
         <IconBtn><MoreHorizontal className="h-3.5 w-3.5" /></IconBtn>
       </div>
@@ -228,54 +247,108 @@ function FriendRow({ friend, dim }: { friend: Friend; dim?: boolean }) {
 }
 
 function AddFriendsTab() {
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedQuery(query), 500);
+    return () => clearTimeout(timeout);
+  }, [query]);
+
+  const { data: searchResults, isLoading: isSearching } = useQuery({
+    queryKey: ['users', 'search', debouncedQuery],
+    queryFn: () => searchUser(debouncedQuery),
+    enabled: debouncedQuery.length > 1,
+  });
+
+  const { data: pendingRequests = [] } = useQuery({
+    queryKey: ['friends', 'pending'],
+    queryFn: getPendingRequests,
+  });
+
+  const { mutate: sendRequest } = useMutation({
+    mutationFn: (receiverId: string) => sendFriendRequest(receiverId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] }),
+  });
+
+  const { mutate: acceptRequest } = useMutation({
+    mutationFn: (friendshipId: string) => acceptFriendRequest(friendshipId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] });
+    },
+  });
+
+  const { mutate: rejectRequest } = useMutation({
+    mutationFn: (friendshipId: string) => rejectFriendRequest(friendshipId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] }),
+  });
+
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl p-4 bg-gradient-to-br from-primary/15 via-fuchsia-500/10 to-transparent border border-white/[0.08]">
+      <div className="rounded-2xl p-4 bg-linear-to-br from-primary/15 via-fuchsia-500/10 to-transparent border border-white/[0.08]">
         <h3 className="text-[13px] font-semibold">Add a friend</h3>
-        <p className="text-[11.5px] text-muted-foreground mt-0.5">Use their username to send a request.</p>
+        <p className="text-[11.5px] text-muted-foreground mt-0.5">Use their display name to send a request.</p>
         <div className="mt-3 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <input
-            placeholder="username#0000"
-            className="w-full h-10 pl-9 pr-24 rounded-xl bg-black/30 border border-white/10 text-[12.5px] placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/40 transition-colors"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by display name..."
+            className="w-full h-10 pl-9 pr-3 rounded-xl bg-black/30 border border-white/10 text-[12.5px] placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/40 transition-colors"
           />
-          <button className="absolute right-1.5 top-1/2 -translate-y-1/2 h-7 px-3 rounded-lg bg-gradient-to-r from-primary to-[oklch(0.65_0.20_295)] text-primary-foreground text-[11px] font-semibold hover:opacity-90 transition-opacity">
-            Send
-          </button>
         </div>
+        {debouncedQuery.length > 1 && (
+          <div className="mt-2 space-y-1">
+            {isSearching ? (
+              <p className="text-[11.5px] text-muted-foreground/70 px-1">Searching...</p>
+            ) : searchResults?.length === 0 ? (
+              <p className="text-[11.5px] text-muted-foreground/70 px-1">No users found</p>
+            ) : (
+              searchResults?.map((user: any) => (
+                <div key={user.id} className="flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-white/[0.05] transition-colors">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/40 to-fuchsia-400/40 flex items-center justify-center text-[11px] font-semibold shrink-0">
+                    {user.displayName?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[13px] font-medium truncate">{user.displayName}</div>
+                    <div className="text-[11px] text-muted-foreground/80 truncate">@{user.username}</div>
+                  </div>
+                  <button
+                    onClick={() => sendRequest(user.id)}
+                    className="h-7 px-2.5 rounded-lg bg-white/[0.06] hover:bg-primary/20 hover:text-primary text-[11px] font-medium text-foreground/80 flex items-center gap-1 transition-colors"
+                  >
+                    <UserPlus className="h-3 w-3" /> Add
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
-      <Section label={`Pending — ${friendRequests.length}`}>
-        {friendRequests.map((r) => (
+      <Section label={`Pending — ${pendingRequests.length}`}>
+        {pendingRequests.map((r: any) => (
           <div key={r.id} className="flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-white/[0.05] transition-colors">
-            <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${r.avatarColor} shrink-0`} />
-            <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-medium truncate">{r.name}</div>
-              <div className="text-[11px] text-muted-foreground/80 truncate">{r.handle} · {r.mutual} mutual</div>
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary/40 to-fuchsia-400/40 flex items-center justify-center text-[11px] font-semibold shrink-0">
+              {r.sender.displayName?.charAt(0).toUpperCase()}
             </div>
-            <button className="h-7 w-7 rounded-lg bg-emerald-400/15 text-emerald-300 hover:bg-emerald-400/25 flex items-center justify-center transition-colors">
+            <div className="min-w-0 flex-1">
+              <div className="text-[13px] font-medium truncate">{r.sender.displayName}</div>
+              <div className="text-[11px] text-muted-foreground/80 truncate">@{r.sender.username}</div>
+            </div>
+            <button
+              onClick={() => acceptRequest(r.id)}
+              className="h-7 w-7 rounded-lg bg-emerald-400/15 text-emerald-300 hover:bg-emerald-400/25 flex items-center justify-center transition-colors"
+            >
               <Check className="h-3.5 w-3.5" />
             </button>
-            <button className="h-7 w-7 rounded-lg bg-white/[0.05] text-muted-foreground hover:bg-rose-400/15 hover:text-rose-300 flex items-center justify-center transition-colors">
+            <button
+              onClick={() => rejectRequest(r.id)}
+              className="h-7 w-7 rounded-lg bg-white/[0.05] text-muted-foreground hover:bg-rose-400/15 hover:text-rose-300 flex items-center justify-center transition-colors"
+            >
               <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        ))}
-      </Section>
-
-      <Section label="Suggested">
-        {[
-          { id: "s1", name: "Priya Nair", handle: "@priya", mutual: 6, avatarColor: "from-teal-400 to-cyan-400" },
-          { id: "s2", name: "Theo Walsh", handle: "@theo", mutual: 3, avatarColor: "from-orange-400 to-red-400" },
-        ].map((s) => (
-          <div key={s.id} className="flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-white/[0.05] transition-colors">
-            <div className={`h-9 w-9 rounded-full bg-gradient-to-br ${s.avatarColor} shrink-0`} />
-            <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-medium truncate">{s.name}</div>
-              <div className="text-[11px] text-muted-foreground/80 truncate">{s.handle} · {s.mutual} mutual</div>
-            </div>
-            <button className="h-7 px-2.5 rounded-lg bg-white/[0.06] hover:bg-primary/20 hover:text-primary text-[11px] font-medium text-foreground/80 flex items-center gap-1 transition-colors">
-              <UserPlus className="h-3 w-3" /> Add
             </button>
           </div>
         ))}
@@ -283,7 +356,6 @@ function AddFriendsTab() {
     </div>
   );
 }
-
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>

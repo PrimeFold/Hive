@@ -14,9 +14,9 @@ function ChannelView() {
   return (
     <div className="flex-1 flex flex-col min-w-0">
         <main className="flex-1 flex flex-col min-w-0">
-          <ChatHeader channelId={channelId} workspaceId={workspaceId}  />
-          <MessageList channelId={channelId} typingUsers={typingUsers}/>
-          <ChatInput  channelId={channelId}/>
+          <ChatHeader  channelId={channelId} workspaceId={workspaceId}  />
+          <MessageList id={channelId} mode='channel' typingUsers={typingUsers}/>
+          <ChatInput  id={channelId} mode='channel' />
         </main>
       
     </div>

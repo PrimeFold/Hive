@@ -13,12 +13,24 @@ datasource db {
  
 }
 
-enum RequestStatus{
+enum FriendshipStatus{
   PENDING
   ACCEPTED
   REJECTED
 
 }
+
+model Friendship {
+  id         String           @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendshipStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+
+  sender     User @relation("SentRequests", fields: [senderId], references: [id])
+  receiver   User @relation("ReceivedRequests", fields: [receiverId], references: [id])
+}
+
 
 enum Role{
   OWNER
@@ -39,6 +51,8 @@ model User {
   conversationsAsOne Conversation[]  @relation("participantOne")
   conversationsAsTwo Conversation[]  @relation("participantTwo")
   directMessages     DirectMessage[]
+  sentRequests     Friendship[] @relation("SentRequests")
+  receivedRequests Friendship[] @relation("ReceivedRequests")
 }
 
 model Workspace {

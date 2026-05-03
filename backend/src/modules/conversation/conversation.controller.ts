@@ -5,6 +5,7 @@ import * as ConversationService from '../conversation/conversation.service'
 
 export const createConversation:Handler = async(req,res)=>{
     const currentUser = req.user?.id;
+    const targetUser = req.params.id; 
 
     if(!currentUser){
         return res.status(403).json({
@@ -12,15 +13,13 @@ export const createConversation:Handler = async(req,res)=>{
         })
     }
 
-    const { targetUser } = req.body;
-
     if (!targetUser) {
         return res.status(400).json({
             message: "Target user is required"
         })
     }
 
-    const response = await ConversationService.createConversation(currentUser, targetUser);
+    const response = await ConversationService.createConversation(currentUser, targetUser as string);
     const statusCode = response.statusCode || 500;
     if(!response.success){
         return res.status(statusCode).json({
