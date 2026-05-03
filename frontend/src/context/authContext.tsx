@@ -58,9 +58,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const data = await refreshToken();
         login(data.accessToken,data.user)
-        
+        console.log('refresh data: ',data)
       } catch (error) {
-        console.log("No active sessions found..")
+        console.log("refresh error : ",error)
       }finally{
         setIsLoading(false)
       }
