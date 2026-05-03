@@ -100,17 +100,16 @@ export const generateRefreshToken:Handler = async(req,res)=>{
     }
 
     const tokenRows = response.data || [];
-    console.log('token rows found:', tokenRows.length);
+
     let matchedTokenId: string | null = null;
     for (const tokenRow of tokenRows) {
       const isValid = await bcrypt.compare(CookieToken, tokenRow.tokenHash);
-      console.log('isValid:', isValid);
+
       if (isValid) {
         matchedTokenId = tokenRow.id;
         break;
       }
     }
-    console.log('matchedTokenId:', matchedTokenId);
     if(!matchedTokenId){
       return res.status(401).json({
           message:"Unauthorized.."
@@ -122,7 +121,6 @@ export const generateRefreshToken:Handler = async(req,res)=>{
         process.env.JWT_ACCESS_SECRET as Secret,
         {expiresIn:'15m'}
     )
-    console.log('newAccessToken generated:', !!newAccessToken)
 
     const newRefreshToken = jwt.sign(
         {id:userId},
@@ -132,7 +130,6 @@ export const generateRefreshToken:Handler = async(req,res)=>{
 
 
     const deleted = await AuthService.deleteOldTokenFromDB(matchedTokenId);
-    console.log('deleted:', deleted.success)
     if(!deleted.success){
         return res.status(500).json({
             message:deleted.message

@@ -15,8 +15,8 @@ export function CreateWorkspaceModal({ open, onClose }: Props) {
 
   const { mutate, isPending, isError } = useMutation({
     mutationFn: () => createWorkspace(name),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+    onSuccess: async(data) => {
+      await queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       navigate({to:'/app/$workspaceId',params:{workspaceId:data.id}})
       setName("");
       onClose();

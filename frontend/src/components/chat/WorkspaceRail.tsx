@@ -27,9 +27,6 @@ export function WorkspaceRail() {
       <div className="h-px w-8 bg-white/10 my-2" />
 
       <div className="flex-1 flex flex-col gap-2 items-center w-full px-3">
-        
-        
-
         <button onClick={()=>setModalOpen(true)} className="cursor-pointer h-11 w-11 rounded-2xl flex items-center justify-center text-emerald-300/80 bg-emerald-400/[0.06] hover:bg-emerald-400/[0.12] border border-emerald-400/10 transition-colors">
           <Plus className="h-4 w-4" />
         </button>
@@ -45,8 +42,9 @@ export function WorkspaceRail() {
               key={w.id}
               onClick={()=>navigate({to:'/app/$workspaceId', params: { workspaceId: w.id }})}
               className={cn("group relative h-11 w-11 rounded-2xl flex items-center justify-center text-sm font-semibold transition-all duration-300","hover:rounded-xl","text-foreground/70 bg-white/[0.04] hover:bg-white/[0.08] hover:text-white")}>
-              <span className="pointer-events-none absolute left-full ml-3 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur text-[11px] font-medium whitespace-nowrap text-white opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 z-50 border border-white/10">
                 {w.name?.charAt(0).toUpperCase()}
+              <span className="pointer-events-none absolute left-full ml-3 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur text-[11px] font-medium whitespace-nowrap text-white opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 z-50 border border-white/10">
+                {w.name}
               </span>
             </button>
           ))

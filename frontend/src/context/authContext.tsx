@@ -57,10 +57,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const checkExistingSession = async()=>{
       try {
         const data = await refreshToken();
-        login(data.accessToken,data.user)
-        console.log('refresh data: ',data)
+        login(data.accessToken,data.user)      
       } catch (error) {
-        console.log("refresh error : ",error)
       }finally{
         setIsLoading(false)
       }

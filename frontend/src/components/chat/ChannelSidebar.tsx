@@ -5,6 +5,7 @@ import { getChannels } from "@/lib/channel";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { CreateChannelModal } from "./CreateChannelModal";
+import { getWorkspaceById } from "@/lib/workspace";
 
 function iconFor(label: string) {
   if (label === "Channels") return Hash;
@@ -16,16 +17,18 @@ export function ChannelSidebar({ workspaceId }: { workspaceId: string }) {
   const [ModalOpen,setModalOpen] = useState(false)
   const navigate = useNavigate();
 
+  const { data: workspace } = useQuery({
+    queryKey: ['workspace', workspaceId],
+    queryFn: () => getWorkspaceById(workspaceId),
+  });
+
   const {data : channels = [] , isLoading,isError} = useQuery({
     queryKey:['channels',workspaceId],
     queryFn:()=> getChannels(workspaceId)
   })  
 
 
-  const handleNavigate = ()=>{
-    navigate({to:"/app/$workspaceId/$channelId",params:{workspaceId,channelId:channels.id}})
-  }
-
+  
   
 
   return (
@@ -33,10 +36,10 @@ export function ChannelSidebar({ workspaceId }: { workspaceId: string }) {
       <div className="px-2">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-[15px] font-semibold tracking-tight">{channels.name}</h1>
+            <h1 className="text-[15px] font-semibold tracking-tight">{workspace?.name}</h1>
             <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_oklch(0.75_0.18_150)]" />
-              12 online
+              online
             </p>
           </div>
           <button className="h-7 w-7 rounded-lg hover:bg-white/6 flex items-center justify-center text-muted-foreground transition-colors">
@@ -70,7 +73,7 @@ export function ChannelSidebar({ workspaceId }: { workspaceId: string }) {
           <ul className="space-y-0.5">
             {channels.map((channel: any) => (
               <li key={channel.id}>
-                <button onClick={handleNavigate}  className={cn(
+                <button onClick={()=>navigate({to:'/app/$workspaceId/$channelId',params:{workspaceId,channelId:channel.id}})}  className={cn(
                   "w-full group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 relative",
                   "hover:bg-white/4 text-foreground/75"
                 )}>
