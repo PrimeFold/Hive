@@ -1,8 +1,13 @@
 import { RightSidebar } from "@/components/chat/RightSidebar";
 import { WorkspaceRail } from "@/components/chat/WorkspaceRail";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 
-export function App() {
+export const Route = createFileRoute('/App')({
+  component: App
+})
+
+
+function App() {
   return (
     <div className="h-screen w-full flex bg-background text-foreground overflow-hidden relative">
       <div className="pointer-events-none absolute inset-0 z-0">
