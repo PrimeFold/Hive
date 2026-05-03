@@ -122,6 +122,7 @@ export const generateRefreshToken:Handler = async(req,res)=>{
         process.env.JWT_ACCESS_SECRET as Secret,
         {expiresIn:'15m'}
     )
+    console.log('newAccessToken generated:', !!newAccessToken)
 
     const newRefreshToken = jwt.sign(
         {id:userId},
@@ -131,6 +132,7 @@ export const generateRefreshToken:Handler = async(req,res)=>{
 
 
     const deleted = await AuthService.deleteOldTokenFromDB(matchedTokenId);
+    console.log('deleted:', deleted.success)
     if(!deleted.success){
         return res.status(500).json({
             message:deleted.message
