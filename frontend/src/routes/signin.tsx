@@ -32,7 +32,7 @@ function SignInPage() {
     mutationFn: () => loginAPI(email, password),
     onSuccess: (data) => {
       auth?.login(data.accessToken,data.user);
-      navigate({ to: "/app" });
+      navigate({ to: "/App" });
       setEmail("");
       setPassword("");
     },

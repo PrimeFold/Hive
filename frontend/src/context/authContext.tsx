@@ -3,8 +3,6 @@ import {getAccessToken, setAccessToken, clearAccessToken } from '@/lib/axios';
 import { refreshToken } from '@/lib/authService';
 import { socket } from '@/hooks/use-socket';
 
-
-// 1. Define what a 'User' looks like in Hive
 interface User {
   displayName?:string;
   id: string;
@@ -28,7 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading , setIsLoading] = useState(true);
   const isAuthenticated = !!user && !!getAccessToken();
 
-  // This runs when the login API call succeeds
+ 
   const login = (token: string, userData: User) => {
     setAccessToken(token); // Update the Axios interceptor
     setUser(userData);      // Update the UI state

@@ -1,10 +1,18 @@
 import { RightSidebar } from "@/components/chat/RightSidebar";
 import { WorkspaceRail } from "@/components/chat/WorkspaceRail";
-import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute('/App')({
+   beforeLoad: ({ context }) => {
+    if (context.auth?.isLoading) return;
+    if (!context.auth?.isAuthenticated) {
+      throw redirect({ to: '/signin' })
+    }
+  },
   component: App
 })
+
+
 
 
 function App() {

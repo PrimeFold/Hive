@@ -30,7 +30,7 @@ function SignUpPage() {
   const signupMutation = useMutation({
     mutationFn: () => signup(name, email, password),
     onSuccess: () => {
-      navigate({ to: "/chat" });
+      navigate({ to: "/App" });
       setName("");
       setEmail("");
       setPassword("");
