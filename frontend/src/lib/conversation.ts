@@ -5,7 +5,7 @@ export const createConversation = async(userId:string)=>{
     return data.data
 }
 export const getAllConversations = async()=>{
-    const {data} = await api.get(`/conversations`)
+    const {data} = await api.get(`/conversation`)
     return data.data
 }
 export const getConversationById = async(cid:string)=>{
