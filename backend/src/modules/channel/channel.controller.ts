@@ -40,6 +40,21 @@ export const getAllChannels:Handler = async(req,res)=>{
 
 }
 
+export const getChannelById:Handler = async(req,res)=>{
+    const {workspaceId,channelId} = req.params;
+    const response =  await ChannelService.getChannelById(workspaceId as string , channelId as string);
+    
+    const statusCode = response.statusCode || 500;
+    if (!response.success) {
+        return res.status(statusCode).json({ message: response.message });
+    }
+
+    return res.status(statusCode).json({ message: response.message, data: response.data });
+}
+
+
+
+
 export const updateChannelName:Handler = async(req,res)=>{
     
     const result = channelSchema.safeParse(req.body);

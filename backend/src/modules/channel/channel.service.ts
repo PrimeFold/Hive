@@ -106,5 +106,34 @@ export const deleteChannel = async(channelId:string)=>{
 
 }
 
+export const getChannelById = async(wid:string,cid:string)=>{
 
+    try {
+        
+        const channel = await prisma.channel.findFirst({
+            where:{workspaceId:wid,id:cid},
+            select:{
+                id: true,
+                name: true,
+                createdAt: true,
+                workspaceId: true,
+            }
+        })
+
+        return {
+            success:true,
+            message:"Channel fetched successfully!",
+            statusCode:200,
+            data:channel
+        }
+
+    } catch (error) {
+        return {
+            success:false,
+            message:"Error fetching channel",
+            statusCode:500
+        }
+    }
+
+}
 

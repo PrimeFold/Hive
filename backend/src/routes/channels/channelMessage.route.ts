@@ -4,4 +4,4 @@ import { router } from "../../utils/router";
 
 router.get("/channels/:id/messages", AuthMiddleware, ChannelMessageController.getChannelMessageById);
 router.post("/channels/:id/messages",AuthMiddleware,ChannelMessageController.createChannelMessage)
-router.post("/channels/:id/messages/:id",AuthMiddleware,ChannelMessageController.createChannelMessage)
+

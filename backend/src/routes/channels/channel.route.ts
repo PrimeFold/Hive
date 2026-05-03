@@ -10,7 +10,8 @@ const channelLimiter = Limiter({
 });
 
 // Routes for channels
-router.post('/channels/:id', AuthMiddleware, channelLimiter, ChannelController.createChannel);
-router.get('/channels/:id', AuthMiddleware, ChannelController.getAllChannels);
-router.put('/channel/:id', AuthMiddleware, channelLimiter, ChannelController.updateChannelName);
-router.delete('/channel/:id', AuthMiddleware, channelLimiter, ChannelController.deleteChannel);
+router.post('/workspaces/:workspaceId/channels', AuthMiddleware, channelLimiter, ChannelController.createChannel);
+router.get('/workspaces/:workspaceId/channels/:channelId',AuthMiddleware,channelLimiter,ChannelController.getChannelById)
+router.get('/workspaces/:workspaceId/channels', AuthMiddleware, ChannelController.getAllChannels);
+router.put('/workspaces/:workspaceId/channel/:channelId', AuthMiddleware, channelLimiter, ChannelController.updateChannelName);
+router.delete('/workspaces/:workspaceId/channel/:channelId', AuthMiddleware, channelLimiter, ChannelController.deleteChannel);

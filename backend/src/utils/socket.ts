@@ -93,8 +93,6 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
         socket.on('join_channel',(channelId:string)=>{
 
             socket.join(`channel:${channelId}`)
-            console.log(`User ${socket.data.userId} joined channel:${channelId}`)
-
         })
 
         socket.on('send_channel_message',  async(channelId:string,content:string,clientId?:string)=>{
