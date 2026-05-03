@@ -1,21 +1,28 @@
+import { useAuth } from "@/context/authContext";
 import { RightSidebar } from "@/components/chat/RightSidebar";
 import { WorkspaceRail } from "@/components/chat/WorkspaceRail";
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 export const Route = createFileRoute('/App')({
-   beforeLoad: ({ context }) => {
-    if (context.auth?.isLoading) return;
-    if (!context.auth?.isAuthenticated) {
-      throw redirect({ to: '/signin' })
-    }
-  },
   component: App
 })
 
 
-
-
 function App() {
+
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate({ to: '/signin' });
+    }
+  }, [isAuthenticated, isLoading]);
+
+  if (isLoading) return null;
+
+
   return (
     <div className="h-screen w-full flex bg-background text-foreground overflow-hidden relative">
       <div className="pointer-events-none absolute inset-0 z-0">

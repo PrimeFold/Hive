@@ -32,7 +32,6 @@ function SignInPage() {
   const loginMutation = useMutation({
     mutationFn: () => loginAPI(email, password),
     onSuccess: (data) => {
-      console.log('login data :',data)
       auth?.login(data.accessToken,data.user);
       router.invalidate();
       navigate({ to: "/App" });
