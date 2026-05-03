@@ -9,10 +9,10 @@ const searchUserLimiter = Limiter({
     message: "Too many searches please wait..",
 })
 
-router.get("friends/search", AuthMiddleware, searchUser);
-router.post("friends/request/:receiverId", AuthMiddleware, sendFriendRequest);
-router.get("friends/pending", AuthMiddleware, getPendingRequests);
+router.get("/friends/search", AuthMiddleware, searchUser);
+router.post("/friends/request/:receiverId", AuthMiddleware, sendFriendRequest);
+router.get("/friends/pending", AuthMiddleware, getPendingRequests);
 router.get("/friends", AuthMiddleware, getFriends);
-router.patch("friends/:friendshipId/accept", AuthMiddleware, acceptFriendRequest);
-router.patch("friends/:friendshipId/reject", AuthMiddleware, rejectFriendRequest);
+router.patch("/friends/:friendshipId/accept", AuthMiddleware, acceptFriendRequest);
+router.patch("/friends/:friendshipId/reject", AuthMiddleware, rejectFriendRequest);
 

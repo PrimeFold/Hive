@@ -116,7 +116,7 @@ export const generateRefreshToken:Handler = async(req,res)=>{
 
     const newAccessToken = jwt.sign(
         {id:userId},
-        process.env.JWT_SECRET as Secret,
+        process.env.JWT_ACCESS_SECRET as Secret,
         {expiresIn:'15m'}
     )
 
