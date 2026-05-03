@@ -9,16 +9,14 @@ export const Route = createFileRoute('/app/$workspaceId/$channelId')({
 })
 
 function ChannelView() {
-  const { workspaceId,channelId } = Route.useParams()
-  const {typingUsers} = useChannel(channelId)
+  const { workspaceId, channelId } = Route.useParams()
+  const { typingUsers } = useChannel(channelId)
+  
   return (
-    <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 flex flex-col min-w-0">
-          <ChatHeader  channelId={channelId} workspaceId={workspaceId}  />
-          <MessageList id={channelId} mode='channel' typingUsers={typingUsers}/>
-          <ChatInput  id={channelId} mode='channel' />
-        </main>
-      
-    </div>
+    <main className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
+      <ChatHeader channelId={channelId} workspaceId={workspaceId} />
+      <MessageList id={channelId} mode='channel' typingUsers={typingUsers} />
+      <ChatInput id={channelId} mode='channel' />
+    </main>
   )
 }

@@ -32,7 +32,6 @@ export function ChatHeader({ channelId, workspaceId }: Props) {
           </p>
         </div>
       </div>
-      {/* rest stays the same */}
     </header>
   );
 }
