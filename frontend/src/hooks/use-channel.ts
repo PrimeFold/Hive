@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { socket } from '@/lib/socket';
+import { socket } from '@/hooks/use-socket';
 import type { Message } from '@/types/message';
 
 export function useChannel(channelId: string) {
