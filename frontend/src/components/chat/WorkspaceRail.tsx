@@ -6,17 +6,19 @@ import { useState } from "react";
 import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 import Loader from "./loader";
 import { useNavigate } from "@tanstack/react-router";
+import { useAuth } from "#/context/authContext";
 
 export function WorkspaceRail() {
 
   const [modalOpen,setModalOpen] = useState(false);
   const navigate = useNavigate();
-
+  const {user} = useAuth();
 
 
   const { data: workspaces = [] , isLoading, isError} = useQuery({
     queryKey: ['workspaces'],
     queryFn: getWorkspaces,
+    enabled:!!user,
   })
 
   return (

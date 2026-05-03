@@ -27,10 +27,12 @@ type Tab = "conversations" | "friends" | "add";
 export function RightSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState<Tab>("conversations");
+  const {user} = useAuth()
 
   const {data:pendingRequest=[]}= useQuery({
     queryKey:['friends','pending'],
-    queryFn:getPendingRequests
+    queryFn:getPendingRequests,
+    enabled:!!user
   }) 
 
  
