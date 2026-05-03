@@ -1,19 +1,27 @@
-import axios from 'axios';
+import axios from 'axios'
+import { refreshToken } from './authService';
 
-declare module 'axios' {
-  export interface AxiosRequestConfig {
-    _retry?: boolean;
-  }
+let accessToken : string | null =  null;
+let isRefreshing = false;
+let subscribers : ((token:string)=>void)[] = [];
+
+const subscribe = (cb:(token:string)=>void)=>{
+    subscribers.push(cb);
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL
-export let accessToken: string | null = null;
+export const notifySubscribers = (token: string) => {
+  subscribers.forEach((cb) => cb(token));
+  subscribers = [];
+};
 
-export const setAccessToken = ( token : string ) => accessToken = token;
+
+export const setAccessToken = (token:string) => accessToken = token;
+export const getAccessToken = () =>  accessToken;
 export const clearAccessToken = () => accessToken = null;
-export const getAccessToken = ():string|null=> accessToken;
 
-const api = axios.create({
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
+export const api = axios.create({
     baseURL:BASE_URL,
     withCredentials:true
 })
@@ -21,61 +29,55 @@ const api = axios.create({
 api.interceptors.request.use((config)=>{
     if(accessToken){
         config.headers.Authorization = `Bearer ${accessToken}`
-
     }
+
     return config
 })
 
 
-
 api.interceptors.response.use(
-    (response)=>response,
-
+    (response) => response,
+    
     async(error)=>{
-        const originalRequest = error.config
+        const originalRequest = error.config;
 
-        if(error.response?.status === 401 && !originalRequest._retry){
-            originalRequest._retry = true;
+        if(error.response?.status === 401 && !originalRequest._retry ){
 
-            try {
-                const response = await axios.post(`${import.meta.env.VITE_API_URL}/refresh`,{},
-                    {withCredentials:true}
-                )
+            if(!isRefreshing){
+                try {
+                        originalRequest._retry = true;
+                        const response = await refreshToken();
 
-                const newToken = response.data.accessToken;
-                originalRequest.headers.Authorization = `Bearer ${newToken}`
-                setAccessToken(newToken);
-                window.dispatchEvent(new Event('auth:token_refreshed'));
+                        const newAccessToken = response.data.accessToken;
+                        originalRequest.headers = originalRequest.headers || {};
+                        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+                        setAccessToken(newAccessToken);
+                        window.dispatchEvent(new Event('auth:token_refreshed'))
+                        return api(originalRequest);
 
-                return api(originalRequest)
-            } catch{
-                clearAccessToken();
-                window.dispatchEvent(new Event('auth:logout'))
-                return Promise.reject(error)
+                    } catch (error) {
+
+                        clearAccessToken();
+                        window.dispatchEvent(new Event('auth:logout'))
+                        return Promise.reject(error)
+                        isRefreshing = false;
+                }
+            }else{
+                return new Promise((resolve)=>{
+                    subscribe((token:string)=>{
+                        originalRequest.headers.Authorization = `Bearer ${token}`
+                        resolve(api(originalRequest))
+                    })
+                })
             }
+            
+
+
         }
 
-        return Promise.reject(error)
+        return Promise.reject(error);
 
     }
 )
-
-export default api;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

@@ -1,11 +1,37 @@
-import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from "sonner";
-import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
-import { AuthProvider } from "@/context/auth-context";
-import SocketContext from "@/context/socket-context";
-import { useSocket } from "@/hooks/use-socket";
-import "../styles.css"
+import { Outlet, Link, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
+import appCss from "../styles.css?url";
+import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
+import { AuthProvider, type AuthContextType } from "@/context/authContext";
+import { queryClient } from "#/utils/queryClient";
+export const Route = createRootRouteWithContext<{ auth: AuthContextType | undefined , queryClient : QueryClient }>()({
+  head: () => ({
+    links: [{ rel: "stylesheet", href: appCss }],
+  }),
+  component: RootComponent,
+  notFoundComponent: NotFoundComponent,
+});
+
+function RootComponent() {
+
+  
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <html lang="en">
+          <head>
+            <HeadContent />
+          </head>
+          <body>
+            <Outlet />
+            <Scripts />
+          </body>
+        </html>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -17,58 +43,13 @@ function NotFoundComponent() {
         </p>
         <div className="mt-6">
           <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90" to={"."}          >
+            to="/"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
             Go home
           </Link>
         </div>
       </div>
     </div>
-  );
-}
-
-export const Route = createRootRoute({
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-});
-
-function ThemedToaster() {
-  const { theme } = useTheme();
-  return (
-    <Toaster
-      position="top-right"
-      theme={theme}
-      toastOptions={{
-        style: {
-          background: "var(--surface)",
-          border: "1px solid var(--border)",
-          color: "var(--foreground)",
-        },
-      }}
-    />
-  );
-}
-const queryClient = new QueryClient();
-
-function SocketProviderWrapper({ children }: { children: React.ReactNode }) {
-  const socket = useSocket();
-  return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>;
-}
-
-function RootComponent() {
-  return (
-    <>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <SocketProviderWrapper>
-              <Outlet />
-              <ThemedToaster />
-            </SocketProviderWrapper>
-          </AuthProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
-      <Scripts />
-    </>
   );
 }

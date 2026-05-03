@@ -1,22 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Navbar } from "@/components/landing/Navbar";
-import { Hero } from "@/components/landing/Hero";
-import { Features } from "@/components/landing/Features";
-import { FAQ } from "@/components/landing/FAQ";
-import { Footer } from "@/components/landing/Footer";
+import { Landing } from "@/components/landing/Landing";
 
 export const Route = createFileRoute("/")({
-  component: LandingPage,
+  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Halo — Conversations, perfected." },
+      { name: "description", content: "Halo is a beautifully minimal real-time chat. Join rooms, share moments, and stay in flow." },
+      { property: "og:title", content: "Halo — Conversations, perfected." },
+      { property: "og:description", content: "A beautifully minimal real-time chat designed with the precision of your favorite tools." },
+    ],
+  }),
 });
 
-function LandingPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <Hero />
-      <Features />
-      <FAQ />
-      <Footer />
-    </div>
-  );
+function Index() {
+  return <Landing />;
 }

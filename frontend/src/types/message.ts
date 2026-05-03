@@ -1,10 +1,12 @@
-export type Message = {
+export interface Message {
   id: string;
   content: string;
-  senderId: string;
   createdAt: string;
-
-  clientId?: string;
-  pending?: boolean;
-  failed?: boolean;
-};
+  channelId: string;
+  userId: string;
+  user: {
+    id: string;
+    username: string;
+    displayName?: string;
+  }
+}

@@ -9,30 +9,33 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AppRouteImport } from './routes/app'
-import { Route as AboutRouteImport } from './routes/about'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SigninRouteImport } from './routes/signin'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as AppRouteImport } from './routes/App'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppWorkspaceIdRouteImport } from './routes/app.$workspaceId'
+import { Route as AppDmConversationIdRouteImport } from './routes/app.dm.$conversationId'
+import { Route as AppWorkspaceIdChannelIdRouteImport } from './routes/app.$workspaceId.$channelId'
 
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const SigninRoute = SigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+  id: '/App',
+  path: '/App',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -40,73 +43,124 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppWorkspaceIdRoute = AppWorkspaceIdRouteImport.update({
+  id: '/app/$workspaceId',
+  path: '/app/$workspaceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppDmConversationIdRoute = AppDmConversationIdRouteImport.update({
+  id: '/app/dm/$conversationId',
+  path: '/app/dm/$conversationId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppWorkspaceIdChannelIdRoute = AppWorkspaceIdChannelIdRouteImport.update({
+  id: '/$channelId',
+  path: '/$channelId',
+  getParentRoute: () => AppWorkspaceIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/app': typeof AppRoute
-  '/login': typeof LoginRoute
-  '/register': typeof RegisterRoute
+  '/App': typeof AppRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
+  '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
+  '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
+  '/app/dm/$conversationId': typeof AppDmConversationIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/app': typeof AppRoute
-  '/login': typeof LoginRoute
-  '/register': typeof RegisterRoute
+  '/App': typeof AppRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
+  '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
+  '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
+  '/app/dm/$conversationId': typeof AppDmConversationIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/app': typeof AppRoute
-  '/login': typeof LoginRoute
-  '/register': typeof RegisterRoute
+  '/App': typeof AppRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/signin': typeof SigninRoute
+  '/signup': typeof SignupRoute
+  '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
+  '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
+  '/app/dm/$conversationId': typeof AppDmConversationIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/app' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | '/App'
+    | '/forgot-password'
+    | '/signin'
+    | '/signup'
+    | '/app/$workspaceId'
+    | '/app/$workspaceId/$channelId'
+    | '/app/dm/$conversationId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/app' | '/login' | '/register'
-  id: '__root__' | '/' | '/about' | '/app' | '/login' | '/register'
+  to:
+    | '/'
+    | '/App'
+    | '/forgot-password'
+    | '/signin'
+    | '/signup'
+    | '/app/$workspaceId'
+    | '/app/$workspaceId/$channelId'
+    | '/app/dm/$conversationId'
+  id:
+    | '__root__'
+    | '/'
+    | '/App'
+    | '/forgot-password'
+    | '/signin'
+    | '/signup'
+    | '/app/$workspaceId'
+    | '/app/$workspaceId/$channelId'
+    | '/app/dm/$conversationId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
   AppRoute: typeof AppRoute
-  LoginRoute: typeof LoginRoute
-  RegisterRoute: typeof RegisterRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  SigninRoute: typeof SigninRoute
+  SignupRoute: typeof SignupRoute
+  AppWorkspaceIdRoute: typeof AppWorkspaceIdRouteWithChildren
+  AppDmConversationIdRoute: typeof AppDmConversationIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/signin': {
+      id: '/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof SigninRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/App': {
+      id: '/App'
+      path: '/App'
+      fullPath: '/App'
       preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -116,15 +170,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/$workspaceId': {
+      id: '/app/$workspaceId'
+      path: '/app/$workspaceId'
+      fullPath: '/app/$workspaceId'
+      preLoaderRoute: typeof AppWorkspaceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/dm/$conversationId': {
+      id: '/app/dm/$conversationId'
+      path: '/app/dm/$conversationId'
+      fullPath: '/app/dm/$conversationId'
+      preLoaderRoute: typeof AppDmConversationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/$workspaceId/$channelId': {
+      id: '/app/$workspaceId/$channelId'
+      path: '/$channelId'
+      fullPath: '/app/$workspaceId/$channelId'
+      preLoaderRoute: typeof AppWorkspaceIdChannelIdRouteImport
+      parentRoute: typeof AppWorkspaceIdRoute
+    }
   }
 }
 
+interface AppWorkspaceIdRouteChildren {
+  AppWorkspaceIdChannelIdRoute: typeof AppWorkspaceIdChannelIdRoute
+}
+
+const AppWorkspaceIdRouteChildren: AppWorkspaceIdRouteChildren = {
+  AppWorkspaceIdChannelIdRoute: AppWorkspaceIdChannelIdRoute,
+}
+
+const AppWorkspaceIdRouteWithChildren = AppWorkspaceIdRoute._addFileChildren(
+  AppWorkspaceIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
   AppRoute: AppRoute,
-  LoginRoute: LoginRoute,
-  RegisterRoute: RegisterRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  SigninRoute: SigninRoute,
+  SignupRoute: SignupRoute,
+  AppWorkspaceIdRoute: AppWorkspaceIdRouteWithChildren,
+  AppDmConversationIdRoute: AppDmConversationIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
