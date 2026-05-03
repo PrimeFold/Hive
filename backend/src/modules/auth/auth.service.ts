@@ -202,7 +202,10 @@ export const deleteOldTokenFromDB = async (tokenId: string) => {
       message: "Refresh token deleted..",
       statusCode: 200
     };
-  } catch (error) {
+  } catch (error:any) {
+    if(error?.code === 'P2025'){
+      return { success: true, message: "Token already deleted", statusCode: 200 };
+    }
     return {
       success: false,
       message: "Internal Server Error",

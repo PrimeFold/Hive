@@ -134,10 +134,8 @@ export const generateRefreshToken:Handler = async(req,res)=>{
 
     const deleted = await AuthService.deleteOldTokenFromDB(matchedTokenId);
     console.log('deleted:', deleted.success, deleted.message);
-    if(!deleted.success){
-        return res.status(500).json({
-            message:deleted.message
-        })
+    if (!deleted.success) {
+        return res.status(500).json({ message: deleted.message });
     }
 
     const stored = await AuthService.storeNewTokenInDB(newRefreshToken,userId)
