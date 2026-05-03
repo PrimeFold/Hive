@@ -165,6 +165,7 @@ function ConversationsTab() {
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ['conversations'],
     queryFn: getAllConversations,
+    enabled:!!user
   });
 
   const otherParticipant = (c: any) =>
