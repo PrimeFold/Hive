@@ -100,9 +100,11 @@ export const generateRefreshToken:Handler = async(req,res)=>{
     }
 
     const tokenRows = response.data || [];
+    console.log('token rows found:', tokenRows.length);
     let matchedTokenId: string | null = null;
     for (const tokenRow of tokenRows) {
       const isValid = await bcrypt.compare(CookieToken, tokenRow.tokenHash);
+      console.log('isValid:', isValid);
       if (isValid) {
         matchedTokenId = tokenRow.id;
         break;

@@ -60,8 +60,8 @@ api.interceptors.response.use(
 
                         clearAccessToken();
                         window.dispatchEvent(new Event('auth:logout'))
-                        return Promise.reject(error)
                         isRefreshing = false;
+                        return Promise.reject(error)
                 }
             }else{
                 return new Promise((resolve)=>{
