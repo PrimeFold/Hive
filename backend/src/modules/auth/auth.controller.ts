@@ -102,13 +102,15 @@ export const generateRefreshToken:Handler = async(req,res)=>{
     const tokenRows = response.data || [];
 
     let matchedTokenId: string | null = null;
+    console.log('token rows found:', tokenRows.length);
     for (const tokenRow of tokenRows) {
       const isValid = await bcrypt.compare(CookieToken, tokenRow.tokenHash);
-
+      console.log('isValid:', isValid);
       if (isValid) {
         matchedTokenId = tokenRow.id;
         break;
       }
+      console.log('matchedTokenId:', matchedTokenId);
     }
     if(!matchedTokenId){
       return res.status(401).json({
