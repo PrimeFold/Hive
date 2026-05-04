@@ -2,7 +2,7 @@ import { Handler } from "../../../types/handler";
 import * as ChannelMessageService from "./channelMessage.service";
 
 export const createChannelMessage: Handler = async (req, res) => {
-  const rawChannelId = req.params.channelId;
+  const rawChannelId = req.params.id;
   const channelId = Array.isArray(rawChannelId) ? rawChannelId[0] : rawChannelId;
   
   if (!channelId) {
@@ -62,5 +62,3 @@ export const getAllChannelMessages: Handler = async (req, res) => {
 
   return res.status(statusCode).json({ message: response.message, data: response.data });
 };
-
-
