@@ -12,10 +12,36 @@ interface messageListProps {
 }
 
 export function MessageList({id,typingUsers,mode}:messageListProps) {
-  const {data:messages = []} = useQuery({
+  const {data:messages = [], isLoading, error} = useQuery({
     queryKey: [mode === 'channel' ? 'messages' : 'dm', id],
     queryFn:()=> mode === 'channel' ? getMessagesByChannelId(id) : getDirectMessages(id)
   })
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 overflow-y-auto flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex gap-1">
+            <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.3s]" />
+            <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.15s]" />
+            <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce" />
+          </div>
+          <span className="text-sm text-muted-foreground">Loading messages...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 overflow-y-auto flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sm text-red-400/80">Failed to load messages</p>
+          <p className="text-xs text-muted-foreground mt-1">{(error as Error).message}</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 overflow-y-auto">
