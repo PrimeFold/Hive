@@ -4,12 +4,12 @@ import { WorkspaceRail } from "@/components/chat/WorkspaceRail";
 import { Outlet, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-export const Route = createFileRoute('/App')({
-  component: App
+export const Route = createFileRoute('/app')({
+  component: app
 })
 
 
-function App() {
+function app() {
 
   const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
