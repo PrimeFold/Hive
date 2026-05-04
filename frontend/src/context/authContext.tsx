@@ -56,10 +56,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const checkExistingSession = async()=>{
       try {
+        console.log('Attempting to restore session...');
         const data = await refreshToken();
-        login(data.accessToken,data.user)      
+        console.log('Session restored successfully:', data);
+        login(data.accessToken,data.user)
       } catch (error:any) {
-        console.log("session restore failed:", error?.response?.status, error?.response?.data);
+        console.error("Session restore failed:", {
+          status: error?.response?.status,
+          data: error?.response?.data,
+          message: error?.message,
+          fullError: error
+        });
       }finally{
         setIsLoading(false)
       }
