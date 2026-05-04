@@ -45,6 +45,17 @@ export function MessageList({id,typingUsers,mode}:messageListProps) {
     )
   }
 
+  // Add a placeholder when there are no messages
+  if (messages.length === 0) {
+    return (
+      <div className="flex-1 overflow-y-auto flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-4xl mx-auto px-8 py-10 space-y-6">
