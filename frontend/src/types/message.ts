@@ -8,5 +8,7 @@ export interface Message {
     id: string;
     username: string;
     displayName?: string;
-  }
+  };
+  avatarColor?: string;
+  self?: boolean;
 }

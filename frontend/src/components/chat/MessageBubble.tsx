@@ -7,7 +7,7 @@ export function MessageBubble({ message, grouped = false }: { message: Message; 
   const {user} = useAuth()
 
   const self = message.userId === user?.id;
-  const username = message.user.username.split(" ").map((n) => n[0]).slice(0, 2).join("");
+  const username = message.user?.username ? message.user.username.split(" ").map((n) => n[0]).slice(0, 2).join("") : "U";
   const timestamp = new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
   return (
