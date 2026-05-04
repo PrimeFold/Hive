@@ -1,4 +1,4 @@
-﻿import { Handler } from '../../types/handler';
+import { Handler } from '../../types/handler';
 import * as AuthService from './auth.service';
 import { loginSchema, signupSchema } from '../../validation/zod';
 import bcrypt from 'bcrypt'
@@ -58,8 +58,11 @@ export const login:Handler = async(req,res)=>{
 
 export const generateRefreshToken:Handler = async(req,res)=>{
 
+    console.log('generateRefreshToken called');
+    console.log('Cookies:', req.cookies);
     const CookieToken = req.cookies['refresh-token'] as string | undefined;
     if(!CookieToken){
+      console.log('No refresh token cookie found');
       return res.status(403).json({
           message:"Forbidden.."
       })

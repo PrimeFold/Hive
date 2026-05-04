@@ -1,4 +1,4 @@
-﻿import express from 'express';
+import express from 'express';
 import helmet from 'helmet';
 import { createServer } from 'http';
 import cors from 'cors';
@@ -24,8 +24,12 @@ const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL;
 app.set('trust proxy', 1) 
 app.use(express.json())
+const corsOrigin = FRONTEND_URL || (process.env.NODE_ENV === 'production' ? false : true);
+console.log('CORS Origin:', corsOrigin);
+console.log('FRONTEND_URL:', FRONTEND_URL);
+console.log('NODE_ENV:', process.env.NODE_ENV);
 app.use(cors({
-    origin: FRONTEND_URL || true,
+    origin: corsOrigin,
     credentials: true,
 }));
 app.use(helmet());
