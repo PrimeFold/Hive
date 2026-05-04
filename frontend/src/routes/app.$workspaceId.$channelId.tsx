@@ -9,6 +9,7 @@ export const Route = createFileRoute('/app/$workspaceId/$channelId')({
 })
 
 function ChannelView() {
+  console.log('ChannelView rendering');
   const { workspaceId, channelId } = Route.useParams()
   const { typingUsers } = useChannel(channelId)
   

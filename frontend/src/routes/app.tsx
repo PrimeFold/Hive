@@ -10,8 +10,9 @@ export const Route = createFileRoute('/app')({
 
 
 function App() {
-
+  console.log('App rendering');
   const { isAuthenticated, isLoading } = useAuth();
+   console.log('auth state:', { isAuthenticated, isLoading });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,7 +23,7 @@ function App() {
 
   if (isLoading) return null;
 
-
+  console.log('rendering layout');
   return (
     <div className="h-screen w-full flex bg-background text-foreground overflow-hidden relative">
       <div className="pointer-events-none absolute inset-0 z-0">

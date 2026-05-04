@@ -9,6 +9,7 @@ export const Route = createFileRoute('/app/$workspaceId')({
 
 function WorkspaceLayout() {
   const { workspaceId } = Route.useParams()
+  console.log('WorkspaceLayout rendering');
 
   useEffect(()=>{
     socket.emit('join_workspace',workspaceId)
