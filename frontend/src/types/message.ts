@@ -9,6 +9,4 @@ export interface Message {
     username: string;
     displayName?: string;
   };
-  avatarColor?: string;
-  self?: boolean;
 }

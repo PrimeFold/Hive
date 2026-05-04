@@ -16,10 +16,7 @@ export function MessageBubble({ message, grouped = false }: { message: Message; 
         <div className="w-9 shrink-0">
           {!grouped && (
             <div
-              className={cn(
-                "h-9 w-9 rounded-full bg-gradient-to-br flex items-center justify-center text-[11px] font-semibold text-white shadow-md",
-                message.avatarColor ?? "from-slate-400 to-slate-600"
-              )}
+              className="h-9 w-9 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-[11px] font-semibold text-white shadow-md"
             >
               {username}
             </div>
