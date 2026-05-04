@@ -12,6 +12,8 @@ export function ChatHeader({ channelId, workspaceId }: Props) {
     queryFn: () => getChannelById(workspaceId, channelId),
   })
 
+  console.log('ChatHeader:', { channelId, workspaceId, channel, isLoading, error });
+
   const channelName = isLoading ? '...' : error ? 'Error loading channel' : channel?.name || 'Unknown Channel';
 
   return (

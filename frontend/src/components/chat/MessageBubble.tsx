@@ -7,7 +7,7 @@ export function MessageBubble({ message, grouped = false }: { message: Message; 
   const {user} = useAuth()
 
   const self = message.userId === user?.id;
-  const username = message.user.username.split(" ").map((n) => n[0]).slice(0, 2).join("");
+  const username = message.user?.username ? message.user.username.split(" ").map((n) => n[0]).slice(0, 2).join("") : "U";
   const timestamp = new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
   return (
@@ -16,10 +16,7 @@ export function MessageBubble({ message, grouped = false }: { message: Message; 
         <div className="w-9 shrink-0">
           {!grouped && (
             <div
-              className={cn(
-                "h-9 w-9 rounded-full bg-gradient-to-br flex items-center justify-center text-[11px] font-semibold text-white shadow-md",
-                message.avatarColor ?? "from-slate-400 to-slate-600"
-              )}
+              className="h-9 w-9 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-[11px] font-semibold text-white shadow-md"
             >
               {username}
             </div>

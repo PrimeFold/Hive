@@ -17,6 +17,8 @@ export function MessageList({id,typingUsers,mode}:messageListProps) {
     queryFn:()=> mode === 'channel' ? getMessagesByChannelId(id) : getDirectMessages(id)
   })
 
+  console.log('MessageList:', { id, mode, messagesCount: messages.length, isLoading, error: error?.message })
+
   if (isLoading) {
     return (
       <div className="flex-1 overflow-y-auto flex items-center justify-center">
