@@ -36,6 +36,8 @@ function ChannelView() {
   }
 
   console.log("Chat area is being rendered..")
+  console.log('MessageList props:', { id: channelId, mode: 'channel', typingUsers });
+  console.log('ChatInput props:', { id: channelId, mode: 'channel' });
   return (
     <main className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
       <ChatHeader channelId={channelId} workspaceId={workspaceId} />
