@@ -3,7 +3,7 @@ import prisma from "../../lib/prisma";
 
 export const getUserByDisplayName = async (displayName: string) => {
   try {
-    const user = await prisma.user.findFirst({
+    const users = await prisma.user.findMany({
       where: {
         displayName: {
           contains: displayName,
@@ -14,15 +14,12 @@ export const getUserByDisplayName = async (displayName: string) => {
         id: true,
         displayName: true,
         username: true,
-        bio:true
+        bio: true
       },
+      take: 20,
     });
 
-    if (!user) {
-      return { success: false, statusCode: 404, message: "User not found" };
-    }
-
-    return { success: true, statusCode: 200, data: user };
+    return { success: true, statusCode: 200, data: users };
   } catch (error) {
     console.error("Error in getUserByDisplayName:", error);
     return { success: false, statusCode: 500, message: "Internal Server Error" };
@@ -37,11 +34,26 @@ export const createFriendRequest = async (senderId: string, receiverId: string) 
           { senderId, receiverId },
           { senderId: receiverId, receiverId: senderId },
         ],
+        status: "ACCEPTED",
       },
     });
 
     if (existing) {
-      return { success: false, statusCode: 400, message: "Friend request already exists and is pending" };
+      return { success: false, statusCode: 400, message: "You are already friends with this user" };
+    }
+
+    const pending = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { senderId, receiverId },
+          { senderId: receiverId, receiverId: senderId },
+        ],
+        status: "PENDING",
+      },
+    });
+
+    if (pending) {
+      return { success: false, statusCode: 400, message: "Friend request already pending" };
     }
 
     const friendship = await prisma.friendship.create({
