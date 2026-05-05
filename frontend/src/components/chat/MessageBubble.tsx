@@ -33,14 +33,14 @@ export function MessageBubble({ message, grouped = false }: { message: Message; 
         )}
         <div
           className={cn(
-            "px-4 py-2.5 text-[14px] leading-relaxed transition-all",
+            "px-4 py-2.5 text-[14px] leading-relaxed transition-all break-words",
             "shadow-[0_2px_10px_-2px_rgba(0,0,0,0.25)]",
             self
               ? "bg-gradient-to-br from-primary to-[oklch(0.62_0.20_270)] text-primary-foreground rounded-2xl rounded-br-md shadow-[0_8px_24px_-8px_oklch(0.72_0.16_255/0.55)]"
-              : "bg-white/5 backdrop-blur border border-white/[0.06] text-foreground rounded-2xl rounded-bl-md hover:bg-white/[0.07]"
+              : "bg-white/[0.08] backdrop-blur border border-white/[0.1] text-foreground rounded-2xl rounded-bl-md hover:bg-white/[0.12]"
           )}
         >
-          {message.content}
+          {message.content && message.content.trim() ? message.content : <span className="text-muted-foreground/50">[empty message]</span>}
         </div>
       </div>
 

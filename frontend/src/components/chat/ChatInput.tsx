@@ -14,21 +14,19 @@ export function ChatInput({ id ,mode}: ChatInputProps) {
 
   const sendMessage = () => {
     if (!value.trim()) return;
-    
+
     if(mode==='channel'){
       socket.emit('send_channel_message', id, value.trim());
+      socket.emit('channel_typing_stop', id);
     }else{
       socket.emit('new_dm',id,value.trim())
-    }
-    
-    if (mode === 'channel') {
-      socket.emit('channel_typing_start', id);
-      setValue('')
-    } else {
-      socket.emit('typing_start', id);
+      socket.emit('typing_stop', id);
     }
 
- 
+    setValue('')
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,12 +42,25 @@ export function ChatInput({ id ,mode}: ChatInputProps) {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setValue(e.target.value);
-    socket.emit('channel_typing_start', id);
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit('channel_typing_stop', id);
-    }, 2000);
+    const newValue = e.target.value;
+    setValue(newValue);
+
+    if (newValue.trim()) {
+      if (mode === 'channel') {
+        socket.emit('channel_typing_start', id);
+      } else {
+        socket.emit('typing_start', id);
+      }
+
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        if (mode === 'channel') {
+          socket.emit('channel_typing_stop', id);
+        } else {
+          socket.emit('typing_stop', id);
+        }
+      }, 2000);
+    }
   };
 
   return (

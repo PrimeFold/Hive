@@ -72,14 +72,16 @@ export function MessageList({id,typingUsers,mode}:messageListProps) {
           );
         })}
 
-        <div className="flex items-center gap-3 pl-12 text-[11.5px] text-muted-foreground/80">
-          <div className="flex gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.3s]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.15s]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" />
+        {typingUsers.length > 0 && (
+          <div className="flex items-center gap-3 pl-12 text-[11.5px] text-muted-foreground/80">
+            <div className="flex gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.3s]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.15s]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" />
+            </div>
+            <span>{typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing…</span>
           </div>
-          <span>{typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing…</span>
-        </div>
+        )}
       </div>
     </div>
   );
