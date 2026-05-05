@@ -16,9 +16,9 @@ function WorkspaceLayout() {
   },[workspaceId])
 
   return (
-    <>
+    <div className="flex flex-1 min-w-0">
       <ChannelSidebar workspaceId={workspaceId} />
       <Outlet />
-    </>
+    </div>
   )
 }
