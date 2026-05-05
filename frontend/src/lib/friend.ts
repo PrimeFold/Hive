@@ -1,4 +1,5 @@
 import { api } from "./axios";
+import { socket } from "@/hooks/use-socket";
 
 export const getFriends = async () => {
   const { data } = await api.get('/friends');
@@ -17,15 +18,24 @@ export const searchUser = async (displayName: string) => {
 
 export const sendFriendRequest = async (receiverId: string) => {
   const { data } = await api.post(`/friends/request/${receiverId}`);
+  if (socket.connected) {
+    socket.emit('friend_request_sent', receiverId);
+  }
   return data.data;
 };
 
-export const acceptFriendRequest = async (friendshipId: string) => {
+export const acceptFriendRequest = async (friendshipId: string, senderId?: string) => {
   const { data } = await api.patch(`/friends/${friendshipId}/accept`);
+  if (socket.connected && senderId) {
+    socket.emit('friend_request_accepted', senderId);
+  }
   return data.data;
 };
 
-export const rejectFriendRequest = async (friendshipId: string) => {
+export const rejectFriendRequest = async (friendshipId: string, senderId?: string) => {
   const { data } = await api.patch(`/friends/${friendshipId}/reject`);
+  if (socket.connected && senderId) {
+    socket.emit('friend_request_rejected', senderId);
+  }
   return data.data;
 };

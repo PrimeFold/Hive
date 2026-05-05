@@ -20,6 +20,7 @@ import type { Friend } from "@/types/friends";
 import { createConversation, getAllConversations } from "@/lib/conversation";
 import { useAuth } from "@/context/authContext";
 import { useNavigate } from "@tanstack/react-router";
+import { socket } from "@/hooks/use-socket";
 
 type Tab = "conversations" | "friends" | "add";
 
@@ -28,14 +29,46 @@ export function RightSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState<Tab>("conversations");
   const {user} = useAuth()
+  const queryClient = useQueryClient();
 
   const {data:pendingRequest=[]}= useQuery({
     queryKey:['friends','pending'],
     queryFn:getPendingRequests,
-    enabled:!!user
-  }) 
+    enabled:!!user,
+    staleTime: 30000,
+  })
 
- 
+  // Set up socket listeners for friend events
+  useEffect(() => {
+    if (!socket.connected || !user?.id) return;
+
+    // Join user-specific room for friend notifications
+    socket.emit('user_join_friends');
+
+    // Listen for incoming friend requests
+    socket.on('friend_request_received', () => {
+      queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] });
+    });
+
+    // Listen for friend request acceptance
+    socket.on('friend_request_accepted', () => {
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
+      queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] });
+    });
+
+    // Listen for friend request rejection
+    socket.on('friend_request_rejected', () => {
+      queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] });
+    });
+
+    return () => {
+      socket.off('friend_request_received');
+      socket.off('friend_request_accepted');
+      socket.off('friend_request_rejected');
+    };
+  }, [socket.connected, user?.id, queryClient]);
+
+
   return (
     <motion.aside
       animate={{ width: collapsed ? 56 : 320 }}
@@ -54,7 +87,7 @@ export function RightSidebar() {
       {collapsed ? (
         <CollapsedRail tab={tab} onPick={(t) => { setTab(t); setCollapsed(false); }} pendingCount={pendingRequest.length} />
       ) : (
-        <ExpandedPanel tab={tab} setTab={setTab}/>
+        <ExpandedPanel tab={tab} setTab={setTab} sharedPendingData={pendingRequest}/>
       )}
     </motion.aside>
   );
@@ -98,7 +131,7 @@ function CollapsedRail({ tab, onPick , pendingCount }: { tab: Tab; onPick: (t: T
   );
 }
 
-function ExpandedPanel({ tab, setTab  }: { tab: Tab; setTab: (t: Tab) => void ; }) {
+function ExpandedPanel({ tab, setTab, sharedPendingData }: { tab: Tab; setTab: (t: Tab) => void; sharedPendingData: any[] }) {
   const tabs: { id: Tab; label: string; icon: typeof MessageCircle }[] = [
     { id: "conversations", label: "Chats", icon: MessageCircle },
     { id: "friends", label: "Friends", icon: Users },
@@ -151,7 +184,7 @@ function ExpandedPanel({ tab, setTab  }: { tab: Tab; setTab: (t: Tab) => void ; 
           >
             {tab === "conversations" && <ConversationsTab />}
             {tab === "friends" && <FriendsTab />}
-            {tab === "add" && <AddFriendsTab/>}
+            {tab === "add" && <AddFriendsTab pendingRequests={sharedPendingData}/>}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -249,9 +282,10 @@ function FriendRow({ friend, dim }: { friend: Friend; dim?: boolean }) {
   );
 }
 
-function AddFriendsTab() {
+function AddFriendsTab({ pendingRequests = [] }: { pendingRequests?: any[] }) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -265,18 +299,17 @@ function AddFriendsTab() {
     enabled: debouncedQuery.length > 1,
   });
 
-  const { data: pendingRequests = [] } = useQuery({
-    queryKey: ['friends', 'pending'],
-    queryFn: getPendingRequests,
-  });
-
   const { mutate: sendRequest } = useMutation({
     mutationFn: (receiverId: string) => sendFriendRequest(receiverId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] }),
+    onSuccess: (data, receiverId) => {
+      setSentRequests(prev => new Set([...prev, receiverId]));
+      queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] });
+    },
   });
 
   const { mutate: acceptRequest } = useMutation({
-    mutationFn: (friendshipId: string) => acceptFriendRequest(friendshipId),
+    mutationFn: ({ friendshipId, senderId }: { friendshipId: string; senderId: string }) =>
+      acceptFriendRequest(friendshipId, senderId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friends'] });
       queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] });
@@ -284,7 +317,8 @@ function AddFriendsTab() {
   });
 
   const { mutate: rejectRequest } = useMutation({
-    mutationFn: (friendshipId: string) => rejectFriendRequest(friendshipId),
+    mutationFn: ({ friendshipId, senderId }: { friendshipId: string; senderId: string }) =>
+      rejectFriendRequest(friendshipId, senderId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['friends', 'pending'] }),
   });
 
@@ -309,23 +343,32 @@ function AddFriendsTab() {
             ) : searchResults?.length === 0 ? (
               <p className="text-[11.5px] text-muted-foreground/70 px-1">No users found</p>
             ) : (
-              searchResults?.map((user: any) => (
-                <div key={user.id} className="flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-white/[0.05] transition-colors">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/40 to-fuchsia-400/40 flex items-center justify-center text-[11px] font-semibold shrink-0">
-                    {user.displayName?.charAt(0).toUpperCase()}
+              searchResults?.map((user: any) => {
+                const isRequested = sentRequests.has(user.id);
+                return (
+                  <div key={user.id} className="flex items-center gap-3 px-2.5 py-2 rounded-xl hover:bg-white/[0.05] transition-colors">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/40 to-fuchsia-400/40 flex items-center justify-center text-[11px] font-semibold shrink-0">
+                      {user.displayName?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[13px] font-medium truncate">{user.displayName}</div>
+                      <div className="text-[11px] text-muted-foreground/80 truncate">@{user.username}</div>
+                    </div>
+                    <button
+                      onClick={() => sendRequest(user.id)}
+                      disabled={isRequested}
+                      className={cn(
+                        "h-7 px-2.5 rounded-lg text-[11px] font-medium flex items-center gap-1 transition-colors",
+                        isRequested
+                          ? "bg-primary/20 text-primary/70 cursor-default"
+                          : "bg-white/[0.06] hover:bg-primary/20 hover:text-primary text-foreground/80"
+                      )}
+                    >
+                      <UserPlus className="h-3 w-3" /> {isRequested ? "Requested" : "Add"}
+                    </button>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-medium truncate">{user.displayName}</div>
-                    <div className="text-[11px] text-muted-foreground/80 truncate">@{user.username}</div>
-                  </div>
-                  <button
-                    onClick={() => sendRequest(user.id)}
-                    className="h-7 px-2.5 rounded-lg bg-white/[0.06] hover:bg-primary/20 hover:text-primary text-[11px] font-medium text-foreground/80 flex items-center gap-1 transition-colors"
-                  >
-                    <UserPlus className="h-3 w-3" /> Add
-                  </button>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
@@ -342,13 +385,13 @@ function AddFriendsTab() {
               <div className="text-[11px] text-muted-foreground/80 truncate">@{r.sender.username}</div>
             </div>
             <button
-              onClick={() => acceptRequest(r.id)}
+              onClick={() => acceptRequest({ friendshipId: r.id, senderId: r.sender.id })}
               className="h-7 w-7 rounded-lg bg-emerald-400/15 text-emerald-300 hover:bg-emerald-400/25 flex items-center justify-center transition-colors"
             >
               <Check className="h-3.5 w-3.5" />
             </button>
             <button
-              onClick={() => rejectRequest(r.id)}
+              onClick={() => rejectRequest({ friendshipId: r.id, senderId: r.sender.id })}
               className="h-7 w-7 rounded-lg bg-white/[0.05] text-muted-foreground hover:bg-rose-400/15 hover:text-rose-300 flex items-center justify-center transition-colors"
             >
               <X className="h-3.5 w-3.5" />

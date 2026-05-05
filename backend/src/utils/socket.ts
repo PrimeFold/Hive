@@ -4,6 +4,7 @@ import { verifyAccessToken } from './jwt';
 import { createDirectMessage } from '../modules/directMessage/directMessage.service';
 import { createMessage } from '../modules/channel/channelMessage/channelMessage.service';
 import { redis } from './redis';
+import { fetchFriends } from '../modules/friends/friends.service';
 
 export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
     const io = new Server(httpServer, {
@@ -127,7 +128,39 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
             const onlineMembers = await redis.smembers(`online:${workspaceId}`)
             socket.emit('online_members', onlineMembers)
         })
-        
+
+        //----------------FRIEND OPERATIONS----------------------
+        socket.on('friend_request_sent', async (receiverId: string) => {
+            // Notify the receiver about the new friend request
+            io.to(`user:${receiverId}`).emit('friend_request_received', {
+                senderId: socket.data.userId
+            })
+        })
+
+        socket.on('friend_request_accepted', async (senderId: string) => {
+            // Notify the sender that their request was accepted
+            const friendsList = await fetchFriends(socket.data.userId)
+            io.to(`user:${senderId}`).emit('friend_request_accepted', {
+                receiver: friendsList.data?.find((f: any) => f.id === senderId),
+                acceptedBy: socket.data.userId
+            })
+            // Also update current user's friends list
+            socket.emit('friend_added', {
+                friend: friendsList.data?.find((f: any) => f.id === senderId)
+            })
+        })
+
+        socket.on('friend_request_rejected', async (senderId: string) => {
+            // Notify the sender about rejection
+            io.to(`user:${senderId}`).emit('friend_request_rejected', {
+                rejectedBy: socket.data.userId
+            })
+        })
+
+        socket.on('user_join_friends', () => {
+            // User joins a personal room to receive friend notifications
+            socket.join(`user:${socket.data.userId}`)
+        })
 
         //-------------USER DISCONNECTS---------------
         
@@ -152,7 +185,3 @@ export const setupSocket = (httpServer: any, FRONTEND_URL: string) => {
         });
     });
 };
-
-
-
-
