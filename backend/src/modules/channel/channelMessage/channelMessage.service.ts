@@ -7,41 +7,32 @@ export const getMessagesByChannelID = async(channelId:string)=>{
 
         const key = `channel-message:${channelId}`
         const cached = await redis.lrange(key,0,-1);
+        const parsed = []
 
-        if(cached && cached.length>0){
-            console.log("CACHE HIT")
-            return {
-                success:true,
-                message:"Fetched from cache",
-                data:cached.map((item:string)=>JSON.parse(item)).reverse(),
-                statusCode:200
+        if (cached && cached.length > 0) {
+        console.log("CACHE HIT");
+
+        const parsed = [];
+
+        for (const item of cached) {
+            try {
+                parsed.push(JSON.parse(item));
+            } catch (err) {
+                console.error("Bad cache item:", item);
             }
         }
-
-
-
-        const messages = await prisma.message.findMany({
-            where:{channelId:channelId},
-            orderBy:{createdAt:"asc"},
-            take:50,
-            include:{user:true}
-        })
-
-        console.log("CACHE MISS , HIT DB")
-
-        // Cache messages for future requests
-        for (const msg of messages) {
-            await redis.lpush(`channel-message:${channelId}`, JSON.stringify(msg));
+      
+        if (parsed.length === 0) {
+            await redis.del(key);
+        } else {
+            return {
+                success: true,
+                message: "Fetched from cache",
+                data: parsed.reverse(),
+                statusCode: 200
+            };
         }
-        await redis.ltrim(`channel-message:${channelId}`, 0, 49);  // Keep only last 50
-        await redis.expire(`channel-message:${channelId}`, 15*60);
-
-        return {
-            success:true,
-            message:"Fetched messages",
-            data:messages,
-            statusCode:200
-        }
+    }
 
     } catch (error) {
         return {
