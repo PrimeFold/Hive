@@ -4,77 +4,98 @@ import { useQuery } from "@tanstack/react-query";
 import { getMessagesByChannelId } from "#/lib/message";
 import { getDirectMessages } from "#/lib/direct-messages";
 
-interface messageListProps {
-  id:string;
+interface MessageListProps {
+  id: string;
   typingUsers: string[];
-  mode:'channel' | 'dm'
-
+  mode: "channel" | "dm";
 }
 
-export function MessageList({id,typingUsers,mode}:messageListProps) {
-  const {data:messages = [], isLoading, error} = useQuery({
-    queryKey: [mode === 'channel' ? 'messages' : 'dm', id],
-    queryFn:()=> mode === 'channel' ? getMessagesByChannelId(id) : getDirectMessages(id)
-  })
+export function MessageList({ id, typingUsers, mode }: MessageListProps) {
+  const {
+    data: messages = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: [mode === "channel" ? "messages" : "dm", id],
+    queryFn: () =>
+      mode === "channel"
+        ? getMessagesByChannelId(id)
+        : getDirectMessages(id),
+  });
 
-  console.log('MessageList:', { id, mode, messagesCount: messages.length, isLoading, error: error?.message })
+  // ✅ Normalize messages (CRUCIAL)
+  const normalizeMessage = (msg: any) => ({
+    id: msg?.id,
+    content: msg?.content ?? "",
+    createdAt: msg?.createdAt ?? new Date().toISOString(),
+    userId: msg?.userId ?? msg?.senderId ?? null,
+    user: msg?.user ?? msg?.sender ?? null,
+  });
+
+  const safeMessages = messages
+    .map(normalizeMessage)
+    .filter((m: any) => m.id && m.userId); // 🚫 remove garbage
+
+  console.log("SAFE MESSAGES:", safeMessages);
+
+  // ✅ Grouping logic (sender + time)
+  const getSenderId = (msg: any) => msg?.userId ?? null;
+
+  const isGrouped = (prev: any, curr: any) => {
+    if (!prev || !curr) return false;
+
+    const sameSender = getSenderId(prev) === getSenderId(curr);
+
+    const prevTime = new Date(prev.createdAt).getTime();
+    const currTime = new Date(curr.createdAt).getTime();
+
+    const withinTimeWindow = Math.abs(currTime - prevTime) < 5 * 60 * 1000;
+
+    return sameSender && withinTimeWindow;
+  };
 
   if (isLoading) {
     return (
       <div className="flex-1 overflow-y-auto flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex gap-1">
-            <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.3s]" />
-            <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.15s]" />
-            <span className="h-2 w-2 rounded-full bg-muted-foreground/60 animate-bounce" />
-          </div>
-          <span className="text-sm text-muted-foreground">Loading messages...</span>
-        </div>
+        <span className="text-sm text-muted-foreground">
+          Loading messages...
+        </span>
       </div>
-    )
+    );
   }
 
   if (error) {
     return (
       <div className="flex-1 overflow-y-auto flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-sm text-red-400/80">Failed to load messages</p>
-          <p className="text-xs text-muted-foreground mt-1">{(error as Error).message}</p>
-        </div>
+        <span className="text-sm text-red-400">
+          Failed to load messages
+        </span>
       </div>
-    )
+    );
   }
 
-  // Add a placeholder when there are no messages
-  if (messages.length === 0) {
+  if (safeMessages.length === 0) {
     return (
       <div className="flex-1 overflow-y-auto flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
-        </div>
+        <span className="text-sm text-muted-foreground">
+          No messages yet
+        </span>
       </div>
-    )
+    );
   }
 
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-4xl mx-auto px-8 py-10 space-y-1">
-        {messages.map((m:any, i:any) => {
-          const prev = messages[i - 1];
-
-          // Get sender ID based on message type (channel vs DM)
-          const currentSenderId = m.userId || m.senderId;
-          const prevSenderId = prev ? (prev.userId || prev.senderId) : null;
-
-          // Messages are grouped if from same sender and not too far apart (within 5 messages)
-          const grouped = !!prev && currentSenderId === prevSenderId && (i - (i - 1)) === 1;
+        {safeMessages.map((m: any, i: number) => {
+          const grouped = isGrouped(safeMessages[i - 1], m);
 
           return (
             <motion.div
               key={m.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.35, ease: "easeOut" }}
+              transition={{ delay: i * 0.02, duration: 0.25 }}
               className={grouped ? "-mt-2" : "mt-4"}
             >
               <MessageBubble message={m} grouped={grouped} />
@@ -82,14 +103,13 @@ export function MessageList({id,typingUsers,mode}:messageListProps) {
           );
         })}
 
+        {/* typing indicator */}
         {typingUsers.length > 0 && (
-          <div className="flex items-center gap-3 pl-12 text-[11.5px] text-muted-foreground/80">
-            <div className="flex gap-1">
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.3s]" />
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce [animation-delay:-0.15s]" />
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" />
-            </div>
-            <span>{typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing…</span>
+          <div className="flex items-center gap-3 pl-12 text-xs text-muted-foreground">
+            <span>
+              {typingUsers.join(", ")}{" "}
+              {typingUsers.length === 1 ? "is" : "are"} typing...
+            </span>
           </div>
         )}
       </div>

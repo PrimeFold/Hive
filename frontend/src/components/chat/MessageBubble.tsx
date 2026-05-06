@@ -2,42 +2,93 @@ import { useAuth } from "#/context/authContext";
 import type { Message } from "@/types/message";
 import { cn } from "@/lib/utils";
 
-export function MessageBubble({ message, grouped = false }: { message: Message; grouped?: boolean }) {
+export function MessageBubble({
+  message,
+  grouped = false,
+}: {
+  message: Message;
+  grouped?: boolean;
+}) {
+  const { user } = useAuth();
 
-  const {user} = useAuth()
+ 
+  const senderId = message?.userId ?? message?.senderId ?? null;
 
-  // Handle both channel and DM message structures
-  const senderId = message.userId || message.senderId;
+  
+  if (!senderId) return null;
+
   const self = senderId === user?.id;
 
-  // Get username from either message.user (channels) or message.sender (DMs)
-  const sender = message.user || message.sender;
-  const senderUsername = sender?.username || "Unknown";
-  const username = senderUsername.split(" ").map((n) => n[0]).slice(0, 2).join("") || "U";
+  
+  const sender = message?.user ?? message?.sender ?? null;
 
-  const timestamp = new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const senderUsername =
+    typeof sender?.username === "string" && sender.username.trim()
+      ? sender.username
+      : "Unknown";
+
+  const username =
+    senderUsername
+      .split(" ")
+      .map((n) => n?.[0] || "")
+      .slice(0, 2)
+      .join("") || "U";
+
+  // ✅ Safe timestamp
+  let timestamp = "";
+  try {
+    timestamp = message?.createdAt
+      ? new Date(message.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+  } catch {
+    timestamp = "";
+  }
+
+  // ✅ Safe content
+  const content =
+    typeof message?.content === "string" && message.content.trim()
+      ? message.content
+      : null;
 
   return (
-    <div className={cn("flex w-full gap-3 group", self ? "justify-end" : "justify-start")}>
+    <div
+      className={cn(
+        "flex w-full gap-3 group",
+        self ? "justify-end" : "justify-start"
+      )}
+    >
       {!self && (
         <div className="w-9 shrink-0">
           {!grouped && (
-            <div
-              className="h-9 w-9 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-[11px] font-semibold text-white shadow-md"
-            >
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-[11px] font-semibold text-white shadow-md">
               {username}
             </div>
           )}
         </div>
       )}
 
-      <div className={cn("max-w-[68%] flex flex-col gap-1", self ? "items-end" : "items-start")}>
+      <div
+        className={cn(
+          "max-w-[68%] flex flex-col gap-1",
+          self ? "items-end" : "items-start"
+        )}
+      >
         {!grouped && (
           <div className="flex items-center gap-2 px-1">
-            <span className="text-[12.5px] font-semibold text-foreground/90">{username}</span>
-            <span className="text-[10px] text-muted-foreground/70">{timestamp}</span>
+            <span className="text-[12.5px] font-semibold text-foreground/90">
+              {username}
+            </span>
+            {timestamp && (
+              <span className="text-[10px] text-muted-foreground/70">
+                {timestamp}
+              </span>
+            )}
           </div>
         )}
+
         <div
           className={cn(
             "px-4 py-2.5 text-[14px] leading-relaxed transition-all break-words",
@@ -47,7 +98,11 @@ export function MessageBubble({ message, grouped = false }: { message: Message; 
               : "bg-white/[0.08] backdrop-blur border border-white/[0.1] text-foreground rounded-2xl rounded-bl-md hover:bg-white/[0.12]"
           )}
         >
-          {message.content && message.content.trim() ? message.content : <span className="text-muted-foreground/50">[empty message]</span>}
+          {content ?? (
+            <span className="text-muted-foreground/50">
+              [empty message]
+            </span>
+          )}
         </div>
       </div>
 
