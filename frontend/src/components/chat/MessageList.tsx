@@ -58,25 +58,24 @@ export function MessageList({id,typingUsers,mode}:messageListProps) {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="max-w-4xl mx-auto px-8 py-10 space-y-6">
-        <div className="flex items-center gap-4 my-2">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-          <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground/70 bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.06]">
-            Today · May 2
-          </span>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        </div>
-
+      <div className="max-w-4xl mx-auto px-8 py-10 space-y-1">
         {messages.map((m:any, i:any) => {
           const prev = messages[i - 1];
-          const grouped = !!prev && prev.username === m.username && prev.self === m.self;
+
+          // Get sender ID based on message type (channel vs DM)
+          const currentSenderId = m.userId || m.senderId;
+          const prevSenderId = prev ? (prev.userId || prev.senderId) : null;
+
+          // Messages are grouped if from same sender and not too far apart (within 5 messages)
+          const grouped = !!prev && currentSenderId === prevSenderId && (i - (i - 1)) === 1;
+
           return (
             <motion.div
               key={m.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05, duration: 0.35, ease: "easeOut" }}
-              className={grouped ? "-mt-3" : ""}
+              className={grouped ? "-mt-2" : "mt-4"}
             >
               <MessageBubble message={m} grouped={grouped} />
             </motion.div>

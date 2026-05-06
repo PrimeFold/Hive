@@ -6,8 +6,15 @@ export function MessageBubble({ message, grouped = false }: { message: Message; 
 
   const {user} = useAuth()
 
-  const self = message.userId === user?.id;
-  const username = message.user?.username ? message.user.username.split(" ").map((n) => n[0]).slice(0, 2).join("") : "U";
+  // Handle both channel and DM message structures
+  const senderId = message.userId || message.senderId;
+  const self = senderId === user?.id;
+
+  // Get username from either message.user (channels) or message.sender (DMs)
+  const sender = message.user || message.sender;
+  const senderUsername = sender?.username || "Unknown";
+  const username = senderUsername.split(" ").map((n) => n[0]).slice(0, 2).join("") || "U";
+
   const timestamp = new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
   return (

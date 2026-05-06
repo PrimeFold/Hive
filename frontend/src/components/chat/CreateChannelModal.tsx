@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createChannel } from "@/lib/channel";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 
 interface Props {
   open: boolean;
@@ -10,22 +10,46 @@ interface Props {
 
 export function CreateChannelModal({ open, onClose }: Props) {
   const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { workspaceId } = useParams({ from: '/app/$workspaceId' });
 
-  const { mutate, isPending, isError } = useMutation({
-    mutationFn: () => createChannel(name),
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => createChannel(name, workspaceId),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["channels"] });
-      navigate({to:'/app/$workspaceId/$channelId',params:{workspaceId:data.wid,channelId:data.id}})
+      navigate({to:'/app/$workspaceId/$channelId',params:{workspaceId:data.workspaceId,channelId:data.id}})
       setName("");
+      setError(null);
       onClose();
     },
+    onError: (err: any) => {
+      const message = err?.response?.data?.message || "Failed to create channel. Please try again.";
+      setError(message);
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      setError("Channel name cannot be empty");
+      return;
+    }
+
+    if (trimmedName.length < 4) {
+      setError("Channel name must be at least 4 characters");
+      return;
+    }
+
+    if (trimmedName.length > 25) {
+      setError("Channel name must be less than 25 characters");
+      return;
+    }
+
+    setError(null);
     mutate();
   };
 
@@ -42,13 +66,16 @@ export function CreateChannelModal({ open, onClose }: Props) {
             type="text"
             placeholder="e.g. Halo Studio"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              setError(null);
+            }}
             className="w-full h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13.5px] text-white/80 outline-none focus:border-violet-400/50 placeholder:text-white/20"
             autoFocus
           />
 
-          {isError && (
-            <p className="text-[12px] text-red-400/80">Something went wrong. Try again.</p>
+          {error && (
+            <p className="text-[12px] text-red-400/80">{error}</p>
           )}
 
           <div className="flex justify-end gap-2 pt-1">

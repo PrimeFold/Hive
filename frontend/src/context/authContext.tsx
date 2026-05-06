@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading , setIsLoading] = useState(true);
   const isAuthenticated = !!user && !!getAccessToken();
 
- 
+
   const login = (token: string, userData: User) => {
     setAccessToken(token); // Update the Axios interceptor
     setUser(userData);      // Update the UI state
@@ -52,27 +52,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return ()=> window.removeEventListener('auth:logout',handleLogoutEvent);
   },[])
 
+  // Session restoration on mount
   useEffect(()=>{
+    let isMounted = true;
 
     const checkExistingSession = async()=>{
       try {
-        console.log('Attempting to restore session...');
+        // Attempt to refresh token from cookie
         const data = await refreshToken();
-        console.log('Session restored successfully:', data);
-        login(data.accessToken,data.user)
+        if (isMounted) {
+          login(data.accessToken, data.user);
+        }
       } catch (error:any) {
-        console.error("Session restore failed:", {
-          status: error?.response?.status,
-          data: error?.response?.data,
-          message: error?.message,
-          fullError: error
-        });
-      }finally{
-        setIsLoading(false)
+        // Silent fail - user will be redirected to login if needed
+        if (isMounted) {
+          clearAccessToken();
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
+
     checkExistingSession();
 
+    return () => {
+      isMounted = false;
+    };
   },[])
 
   return (

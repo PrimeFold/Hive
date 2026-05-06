@@ -1,7 +1,7 @@
 import { api } from "./axios"
 
-export const createChannel = async(name:string,wid?:string)=>{
-    const {data} = await api.post(`/workspaces/${wid}/channel`,{name})
+export const createChannel = async(name:string,wid:string)=>{
+    const {data} = await api.post(`/workspaces/${wid}/channels`,{name})
     return data.data;
 }
 
