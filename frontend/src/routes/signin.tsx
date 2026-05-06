@@ -34,12 +34,12 @@ function SignInPage() {
     onSuccess: (data) => {
       auth?.login(data.accessToken,data.user);
       router.invalidate();
-      navigate({ to: "/App" });
+      navigate({ to: "/app" });
       setEmail("");
       setPassword("");
     },
     onError: (error) => {
-      console.error("Login failed:", error);
+      console.log("Sign in failed")
     },
   });
 

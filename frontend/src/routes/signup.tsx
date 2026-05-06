@@ -4,6 +4,8 @@ import { Mail, Lock, User } from "lucide-react";
 import { signup } from "@/lib/auth";
 import { GlowButton } from "@/components/auth/GlowButton";
 import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/context/authContext";
+import { Toaster } from "#/components/ui/sonner.tsx";
 
 export const Route = createFileRoute("/signup")({
   component: SignUpPage,
@@ -26,17 +28,16 @@ function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const signupMutation = useMutation({
     mutationFn: () => signup(name, email, password),
-    onSuccess: () => {
-      navigate({ to: "/App" });
-      setName("");
-      setEmail("");
-      setPassword("");
+    onSuccess: (data) => {
+      auth.login(data.accessToken, data.user);
+      navigate({ to: "/app" });
     },
     onError: (error) => {
-      console.error("Signup failed:", error);
+      Toaster(`Signup failed${error}`)
     },
   });
 

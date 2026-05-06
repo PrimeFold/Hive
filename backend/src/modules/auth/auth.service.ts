@@ -362,4 +362,80 @@ export const logout = async (userId: string, refreshToken: string) => {
   }
 };
 
+export const forgetPassword = async(newPasswordHash:string,email?:string,username?:string)=>{
+
+  try {
+    //If user remembers username and not email..
+    if(!email && username){
+      const existing = await prisma.user.findUnique({
+        where:{
+          username:username
+        }
+      })
+
+      if(!existing){
+        return{
+          success:false,
+          message:"user not found",
+          statusCode:404
+        }
+      }
+
+
+      await prisma.user.update({
+        data:{passwordHash:newPasswordHash},
+        where:{username:username}
+      })
+
+      return{
+        success:true,
+        message:"Password updated successfully!",
+        statusCode:200
+      }
+
+
+    }else if(!username && email){
+      //If user remembers the email and not username..
+      const existing = await prisma.user.findUnique({
+        where:{
+          email:email
+        }
+      })
+
+      if(!existing){
+        return{
+          success:false,
+          message:"user not found",
+          statusCode:404
+        }
+      }
+
+
+      await prisma.user.update({
+        data:{passwordHash:newPasswordHash},
+        where:{email:email}
+      })
+
+      return{
+        success:true,
+        message:"Password updated successfully!",
+        statusCode:200
+      }
+    }
+    
+    return{
+      success:false,
+      message:"Atleast One of the fields should be filled !",
+      statusCode:500
+    }
+
+  } catch (error) {
+    return{
+      success:false,
+      message:"Internal Server Error",
+      statusCode:500
+    }
+  }
+
+}
 

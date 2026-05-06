@@ -7,6 +7,7 @@ import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 import Loader from "./loader";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "#/context/authContext";
+import { UserNav } from "./UserNav";
 
 export function WorkspaceRail() {
 
@@ -54,9 +55,7 @@ export function WorkspaceRail() {
         
       </div>
 
-      <div className="h-9 w-9 rounded-full bg-linear-to-br from-primary/40 to-fuchsia-400/40 flex items-center justify-center text-[11px] font-semibold ring-2 ring-white/10">
-        Y
-      </div>
+      <UserNav />
     </aside>
   );
 }

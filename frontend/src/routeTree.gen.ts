@@ -14,7 +14,10 @@ import { Route as SigninRouteImport } from './routes/signin'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppWorkspaceIdRouteImport } from './routes/app.$workspaceId'
+import { Route as AppProfileIndexRouteImport } from './routes/app.profile.index'
+import { Route as AppProfileSettingsRouteImport } from './routes/app.profile.settings'
 import { Route as AppDmConversationIdRouteImport } from './routes/app.dm.$conversationId'
 import { Route as AppWorkspaceIdChannelIdRouteImport } from './routes/app.$workspaceId.$channelId'
 
@@ -43,10 +46,25 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppWorkspaceIdRoute = AppWorkspaceIdRouteImport.update({
   id: '/$workspaceId',
   path: '/$workspaceId',
   getParentRoute: () => AppRoute,
+} as any)
+const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppProfileRoute,
+} as any)
+const AppProfileSettingsRoute = AppProfileSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppProfileRoute,
 } as any)
 const AppDmConversationIdRoute = AppDmConversationIdRouteImport.update({
   id: '/dm/$conversationId',
@@ -66,8 +84,11 @@ export interface FileRoutesByFullPath {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
+  '/app/profile': typeof AppProfileRouteWithChildren
   '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
   '/app/dm/$conversationId': typeof AppDmConversationIdRoute
+  '/app/profile/settings': typeof AppProfileSettingsRoute
+  '/app/profile/': typeof AppProfileIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +99,8 @@ export interface FileRoutesByTo {
   '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
   '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
   '/app/dm/$conversationId': typeof AppDmConversationIdRoute
+  '/app/profile/settings': typeof AppProfileSettingsRoute
+  '/app/profile': typeof AppProfileIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,8 +110,11 @@ export interface FileRoutesById {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/app/$workspaceId': typeof AppWorkspaceIdRouteWithChildren
+  '/app/profile': typeof AppProfileRouteWithChildren
   '/app/$workspaceId/$channelId': typeof AppWorkspaceIdChannelIdRoute
   '/app/dm/$conversationId': typeof AppDmConversationIdRoute
+  '/app/profile/settings': typeof AppProfileSettingsRoute
+  '/app/profile/': typeof AppProfileIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -99,8 +125,11 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/app/$workspaceId'
+    | '/app/profile'
     | '/app/$workspaceId/$channelId'
     | '/app/dm/$conversationId'
+    | '/app/profile/settings'
+    | '/app/profile/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +140,8 @@ export interface FileRouteTypes {
     | '/app/$workspaceId'
     | '/app/$workspaceId/$channelId'
     | '/app/dm/$conversationId'
+    | '/app/profile/settings'
+    | '/app/profile'
   id:
     | '__root__'
     | '/'
@@ -119,8 +150,11 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/app/$workspaceId'
+    | '/app/profile'
     | '/app/$workspaceId/$channelId'
     | '/app/dm/$conversationId'
+    | '/app/profile/settings'
+    | '/app/profile/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -168,12 +202,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/profile': {
+      id: '/app/profile'
+      path: '/profile'
+      fullPath: '/app/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/$workspaceId': {
       id: '/app/$workspaceId'
       path: '/$workspaceId'
       fullPath: '/app/$workspaceId'
       preLoaderRoute: typeof AppWorkspaceIdRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/profile/': {
+      id: '/app/profile/'
+      path: '/'
+      fullPath: '/app/profile/'
+      preLoaderRoute: typeof AppProfileIndexRouteImport
+      parentRoute: typeof AppProfileRoute
+    }
+    '/app/profile/settings': {
+      id: '/app/profile/settings'
+      path: '/settings'
+      fullPath: '/app/profile/settings'
+      preLoaderRoute: typeof AppProfileSettingsRouteImport
+      parentRoute: typeof AppProfileRoute
     }
     '/app/dm/$conversationId': {
       id: '/app/dm/$conversationId'
@@ -204,13 +259,29 @@ const AppWorkspaceIdRouteWithChildren = AppWorkspaceIdRoute._addFileChildren(
   AppWorkspaceIdRouteChildren,
 )
 
+interface AppProfileRouteChildren {
+  AppProfileSettingsRoute: typeof AppProfileSettingsRoute
+  AppProfileIndexRoute: typeof AppProfileIndexRoute
+}
+
+const AppProfileRouteChildren: AppProfileRouteChildren = {
+  AppProfileSettingsRoute: AppProfileSettingsRoute,
+  AppProfileIndexRoute: AppProfileIndexRoute,
+}
+
+const AppProfileRouteWithChildren = AppProfileRoute._addFileChildren(
+  AppProfileRouteChildren,
+)
+
 interface AppRouteChildren {
   AppWorkspaceIdRoute: typeof AppWorkspaceIdRouteWithChildren
+  AppProfileRoute: typeof AppProfileRouteWithChildren
   AppDmConversationIdRoute: typeof AppDmConversationIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppWorkspaceIdRoute: AppWorkspaceIdRouteWithChildren,
+  AppProfileRoute: AppProfileRouteWithChildren,
   AppDmConversationIdRoute: AppDmConversationIdRoute,
 }
 

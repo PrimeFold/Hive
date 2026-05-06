@@ -158,3 +158,32 @@ export const generateRefreshToken:Handler = async(req,res)=>{
     })
     return res.status(200).json({message:stored.message,accessToken:newAccessToken,user:userResponseData.data})
 }
+
+
+export const forgotPassword:Handler =async(req,res)=>{
+
+    
+
+    const {email,username,newPassword} = req.body;
+
+    if(!email && !username){
+        return res.status(404).json({
+            message:"Atleast one of the fields should be filled !"
+        })
+    }
+    
+    const hash = await bcrypt.hash(newPassword,10);
+
+    const response = await AuthService.forgetPassword(hash,email as string,username as string)
+
+    if(!response.success){
+        res.status(500).json({
+            message:response.message
+        })
+    }
+
+    res.status(200).json({
+        message:"Password reset successfully !"
+    })
+
+}
