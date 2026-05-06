@@ -2,47 +2,74 @@ import { channel } from "node:diagnostics_channel";
 import prisma from "../../../lib/prisma"
 import { redis } from "../../../utils/redis"
 
-export const getMessagesByChannelID = async(channelId:string)=>{
-    try {
+export const getMessagesByChannelID = async (channelId: string) => {
+  try {
+    const key = `channel-message:${channelId}`;
+    const cached = await redis.lrange(key, 0, -1);
 
-        const key = `channel-message:${channelId}`
-        const cached = await redis.lrange(key,0,-1);
-        const parsed = []
+    console.log("CACHE LENGTH:", cached?.length);
 
-        if (cached && cached.length > 0) {
-        console.log("CACHE HIT");
+    // ✅ CACHE PART (safe version)
+    if (cached && cached.length > 0) {
+      console.log("CACHE HIT");
 
-        const parsed = [];
+      const parsed = [];
 
-        for (const item of cached) {
-            try {
-                parsed.push(JSON.parse(item));
-            } catch (err) {
-                console.error("Bad cache item:", item);
-            }
+      for (const item of cached) {
+        try {
+          parsed.push(JSON.parse(item));
+        } catch (err) {
+          console.error("Bad cache item:", item);
         }
-      
-        if (parsed.length === 0) {
-            await redis.del(key);
-        } else {
-            return {
-                success: true,
-                message: "Fetched from cache",
-                data: parsed.reverse(),
-                statusCode: 200
-            };
-        }
-    }
+      }
 
-    } catch (error) {
+      if (parsed.length > 0) {
         return {
-            success:false,
-            message:"Internal Server Error",
-            statusCode:500
-        }
+          success: true,
+          message: "Fetched from cache",
+          data: parsed.reverse(),
+          statusCode: 200,
+        };
+      } else {
+        // corrupted cache → delete and fallback to DB
+        await redis.del(key);
+      }
     }
-    
-}
+
+    // ✅ DB PART (THIS MUST EXIST)
+    console.log("CACHE MISS → DB HIT");
+
+    const messages = await prisma.message.findMany({
+      where: { channelId },
+      orderBy: { createdAt: "asc" },
+      take: 50,
+      include: { user: true },
+    });
+
+    console.log("DB RESULT COUNT:", messages.length);
+
+    // ✅ CACHE WRITE (use pipeline ideally, but keep simple for now)
+    for (const msg of messages) {
+      await redis.lpush(key, JSON.stringify(msg));
+    }
+    await redis.ltrim(key, 0, 49);
+    await redis.expire(key, 15 * 60);
+
+    return {
+      success: true,
+      message: "Fetched from DB",
+      data: messages,
+      statusCode: 200,
+    };
+  } catch (error) {
+    console.error("ERROR IN getMessagesByChannelID:", error);
+    return {
+      success: false,
+      message: "Internal Server Error",
+      statusCode: 500,
+    };
+  }
+};
 
 export const createMessage=async(userId:string,content:string,channelId:string)=>{
 
