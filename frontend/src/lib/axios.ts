@@ -44,6 +44,7 @@ api.interceptors.response.use(
         if(error.response?.status === 401 && !originalRequest._retry ){
 
             if(!isRefreshing){
+                isRefreshing = true;
                 try {
                         originalRequest._retry = true;
                         const response = await refreshToken();
@@ -52,7 +53,9 @@ api.interceptors.response.use(
                         originalRequest.headers = originalRequest.headers || {};
                         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
                         setAccessToken(newAccessToken);
+                        notifySubscribers(newAccessToken);
                         window.dispatchEvent(new Event('auth:token_refreshed'))
+                        isRefreshing = false;
                         return api(originalRequest);
 
                     } catch (error) {
@@ -65,12 +68,13 @@ api.interceptors.response.use(
             }else{
                 return new Promise((resolve)=>{
                     subscribe((token:string)=>{
+                        originalRequest.headers = originalRequest.headers || {};
                         originalRequest.headers.Authorization = `Bearer ${token}`
                         resolve(api(originalRequest))
                     })
                 })
             }
-            
+
 
 
         }
@@ -79,5 +83,3 @@ api.interceptors.response.use(
 
     }
 )
-
-

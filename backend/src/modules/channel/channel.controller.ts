@@ -1,17 +1,17 @@
-﻿import { Handler } from "../../types/handler";
+import { Handler } from "../../types/handler";
 import { channelSchema } from "../../validation/zod";
 import * as ChannelService from '../channel/channel.service'
 
 export const createChannel : Handler = async(req,res)=>{
-    
+
     const result = channelSchema.safeParse(req.body);
     if(!result.success){
-        return res.status(403).json({
-            message:"Invalid channel name"
+        return res.status(400).json({
+            message:"Invalid channel name. Channel name must be between 4 and 25 characters."
         })
     }
     const {name} = result.data;
-    const workspaceId = req.params.id;
+    const workspaceId = req.params.workspaceId;
 
     const response = await ChannelService.createChannel(name,workspaceId as string);
 
@@ -93,5 +93,3 @@ export const deleteChannel:Handler = async(req,res)=>{
 
 
 }
-
-

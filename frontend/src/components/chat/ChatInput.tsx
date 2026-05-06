@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import { Send, Plus, Smile, Paperclip, Mic, Sparkles } from "lucide-react";
 import { socket } from "@/hooks/use-socket";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/context/authContext";
 
 
 interface ChatInputProps {
@@ -11,15 +13,43 @@ interface ChatInputProps {
 export function ChatInput({ id ,mode}: ChatInputProps) {
   const [value, setValue] = useState("");
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const sendMessage = () => {
     if (!value.trim()) return;
 
+    const messageContent = value.trim();
+
+    // Optimistic UI: Add message to cache immediately
+    if (user) {
+      const optimisticMessage = {
+        id: `temp-${Date.now()}`, // Temporary ID
+        content: messageContent,
+        createdAt: new Date().toISOString(),
+        userId: user.id,
+        senderId: user.id,
+        user: {
+          id: user.id,
+          username: user.username,
+          displayName: user.displayName
+        },
+        sender: {
+          id: user.id,
+          username: user.username,
+          displayName: user.displayName
+        }
+      };
+
+      const queryKey = mode === 'channel' ? ['messages', id] : ['dm', id];
+      queryClient.setQueryData(queryKey, (old: any[] = []) => [...old, optimisticMessage]);
+    }
+
     if(mode==='channel'){
-      socket.emit('send_channel_message', id, value.trim());
+      socket.emit('send_channel_message', id, messageContent);
       socket.emit('channel_typing_stop', id);
     }else{
-      socket.emit('new_dm',id,value.trim())
+      socket.emit('send_dm',id,messageContent)
       socket.emit('typing_stop', id);
     }
 
