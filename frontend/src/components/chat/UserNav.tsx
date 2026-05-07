@@ -21,10 +21,13 @@ export function UserNav() {
 
   const logoutMutation = useMutation({
     mutationFn: logout,
-    onSuccess: () => {
+    onSettled: () => {
       authLogout();
       queryClient.clear();
-      navigate({ to: "/signin", replace: true }); 
+      navigate({ to: "/signin", replace: true });
+    },
+    onError: (error) => {
+      console.error("Backend logout failed, but logging out client-side.", error);
     },
   });
 
@@ -41,7 +44,7 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="h-9 w-9 rounded-full bg-gradient-to-br from-primary/40 to-fuchsia-400/40 flex items-center justify-center text-[11px] font-semibold ring-2 ring-white/10 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+        <button className="h-9 w-9 rounded-full bg-linear-to-br from-primary/40 to-fuchsia-400/40 flex items-center justify-center text-[11px] font-semibold ring-2 ring-white/10 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
           {userInitial}
         </button>
       </DropdownMenuTrigger>
@@ -53,7 +56,7 @@ export function UserNav() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {/* NOTE: Update navigation paths if they are different */}
+        
         <DropdownMenuItem onSelect={() => navigate({ to: "/app/profile" })}>
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>

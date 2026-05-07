@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           login(data.accessToken, data.user);
         }
       } catch (error:any) {
-        // Silent fail - user will be redirected to login if needed
+        
         if (isMounted) {
           clearAccessToken();
           setUser(null);
