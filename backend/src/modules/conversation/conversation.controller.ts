@@ -38,13 +38,20 @@ export const createConversation:Handler = async(req,res)=>{
 export const deleteConversation:Handler = async(req,res)=>{
    
     const convoId = req.params.id;
+    const userId = req.user?.id;
+    if(!userId){
+        return res.status(403).json({
+            message:"User not found"
+        })
+    }
+
     if(!convoId){
         return res.status(404).json({
             message:"Couldn't find a conversation to delete"
         })
     }
 
-    const response = await ConversationService.deleteConversation(convoId as string);
+    const response = await ConversationService.deleteConversation(convoId as string, userId);
     const statusCode = response.statusCode || 500;
     if(!response.success){
         return res.status(statusCode).json({
@@ -83,7 +90,13 @@ export const getAllConversations:Handler = async(req,res)=>{
 
 export const getConversationByID : Handler = async(req,res)=>{
     const convoId = req.params.id;
-    const response = await ConversationService.getConversationByID(convoId as string);
+    const userId = req.user?.id;
+    if(!userId){
+        return res.status(403).json({
+            message:"User not found"
+        })
+    }
+    const response = await ConversationService.getConversationByID(convoId as string, userId);
 
     const statusCode = response.statusCode || 500;
     if(!response.success){
@@ -93,7 +106,8 @@ export const getConversationByID : Handler = async(req,res)=>{
     }
     
     return res.status(statusCode).json({
-        message:response.message
+        message:response.message,
+        data:response.data
     })
 
 }

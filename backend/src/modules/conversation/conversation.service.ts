@@ -47,7 +47,7 @@ export const createConversation = async(currentUserId:string,targetId:string)=>{
 
 }
 
-export const deleteConversation = async(convoId:string)=>{
+export const deleteConversation = async(convoId:string, userId: string)=>{
 
     try {
         
@@ -61,6 +61,16 @@ export const deleteConversation = async(convoId:string)=>{
                 message:"Conversation Does not exist",
                 statusCode: 404
             }
+        }
+
+        const isParticipant =
+          existing.participantOneId === userId || existing.participantTwoId === userId;
+        if (!isParticipant) {
+            return {
+                success: false,
+                message: "Unauthorized",
+                statusCode: 403
+            };
         }
 
         await prisma.conversation.delete({
@@ -128,7 +138,7 @@ export const getAllConversations = async(userId:string)=>{
     }
 }
 
-export const getConversationByID = async(convoId:string)=>{
+export const getConversationByID = async(convoId:string, userId: string)=>{
 
     try {
         
@@ -147,6 +157,16 @@ export const getConversationByID = async(convoId:string)=>{
                 message:"Conversation Does not exist",
                 statusCode: 404
             }
+        }
+
+        const isParticipant =
+          conversation.participantOneId === userId || conversation.participantTwoId === userId;
+        if (!isParticipant) {
+            return {
+                success: false,
+                message: "Unauthorized",
+                statusCode: 403
+            };
         }
 
         return{

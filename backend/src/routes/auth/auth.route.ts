@@ -8,7 +8,9 @@ import { AuthMiddleware } from '../../middlewares/auth/auth.middleware';
 //Signup and Login Routes.
 router.post('/auth/signup', authLimiter, AuthController.signup as express.RequestHandler)
 router.post('/auth/login', authLimiter, AuthController.login as express.RequestHandler)
+router.post('/auth/logout', AuthController.logout as express.RequestHandler)
 router.post('/auth/forgot-password',AuthMiddleware,AuthController.forgotPassword);
+
 
 //refresh token route
 router.post('/refresh', AuthController.generateRefreshToken as express.RequestHandler)

@@ -1,9 +1,28 @@
 import axios from 'axios'
 import { refreshToken } from './authService';
 
-let accessToken : string | null =  null;
+const ACCESS_TOKEN_KEY = 'hive_access_token';
+let accessToken: string | null = null;
 let isRefreshing = false;
 let subscribers : ((token:string)=>void)[] = [];
+let onAuthFailure: (() => void) | null = null;
+
+const readStoredAccessToken = () => {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage.getItem(ACCESS_TOKEN_KEY);
+};
+
+const writeStoredAccessToken = (token: string) => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(ACCESS_TOKEN_KEY, token);
+};
+
+const removeStoredAccessToken = () => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.removeItem(ACCESS_TOKEN_KEY);
+};
+
+accessToken = readStoredAccessToken();
 
 const subscribe = (cb:(token:string)=>void)=>{
     subscribers.push(cb);
@@ -15,9 +34,26 @@ export const notifySubscribers = (token: string) => {
 };
 
 
-export const setAccessToken = (token:string) => accessToken = token;
-export const getAccessToken = () =>  accessToken;
-export const clearAccessToken = () => accessToken = null;
+export const setAccessToken = (token:string) => {
+  accessToken = token;
+  writeStoredAccessToken(token);
+};
+
+export const getAccessToken = () => {
+  if (!accessToken) {
+    accessToken = readStoredAccessToken();
+  }
+  return accessToken;
+};
+
+export const clearAccessToken = () => {
+  accessToken = null;
+  removeStoredAccessToken();
+};
+
+export const setAuthFailureHandler = (handler: (() => void) | null) => {
+  onAuthFailure = handler;
+};
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -27,8 +63,9 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config)=>{
-    if(accessToken){
-        config.headers.Authorization = `Bearer ${accessToken}`
+    const token = getAccessToken();
+    if(token){
+        config.headers.Authorization = `Bearer ${token}`
     }
 
     return config
@@ -54,14 +91,13 @@ api.interceptors.response.use(
                         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
                         setAccessToken(newAccessToken);
                         notifySubscribers(newAccessToken);
-                        window.dispatchEvent(new Event('auth:token_refreshed'))
                         isRefreshing = false;
                         return api(originalRequest);
 
                     } catch (error) {
 
                         clearAccessToken();
-                        window.dispatchEvent(new Event('auth:logout'))
+                        onAuthFailure?.();
                         isRefreshing = false;
                         return Promise.reject(error)
                 }

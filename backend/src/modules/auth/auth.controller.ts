@@ -186,3 +186,30 @@ export const forgotPassword:Handler =async(req,res)=>{
     })
 
 }
+
+export const logout: Handler = async (req, res) => {
+  const cookieToken = req.cookies['refresh-token'] as string | undefined;
+
+  if (!cookieToken) {
+    res.clearCookie('refresh-token');
+    return res.status(200).json({ message: "Logged out successfully" });
+  }
+
+  try {
+    const decoded = jwt.verify(cookieToken, process.env.JWT_REFRESH_SECRET as Secret) as { id?: string; userId?: string };
+    const userId = decoded.id || decoded.userId;
+
+    if (!userId) {
+      res.clearCookie('refresh-token');
+      return res.status(200).json({ message: "Logged out successfully" });
+    }
+
+    await AuthService.logout(userId, cookieToken);
+    res.clearCookie('refresh-token');
+
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch {
+    res.clearCookie('refresh-token');
+    return res.status(200).json({ message: "Logged out successfully" });
+  }
+};

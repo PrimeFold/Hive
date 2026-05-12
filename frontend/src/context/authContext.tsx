@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import {getAccessToken, setAccessToken, clearAccessToken } from '@/lib/axios';
-import { refreshToken } from '@/lib/authService';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { getAccessToken, setAccessToken, clearAccessToken, setAuthFailureHandler } from '@/lib/axios';
+import { getCurrentUser, refreshToken } from '@/lib/authService';
 import { socket } from '@/hooks/use-socket';
 
 interface User {
@@ -27,30 +27,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = !!user && !!getAccessToken();
 
 
-  const login = (token: string, userData: User) => {
+  const login = useCallback((token: string, userData: User) => {
     setAccessToken(token); // Update the Axios interceptor
     setUser(userData);      // Update the UI state
     socket.connect();
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     clearAccessToken();
     setUser(null);
     socket.disconnect();
-  };
+  }, []);
 
   const updateUser = (updates: Partial<User>) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : prev));
   };
 
-  useEffect(()=>{
-    const handleLogoutEvent = ()=>{
-      logout();
-    }
-
-    window.addEventListener('auth:logout',handleLogoutEvent);
-    return ()=> window.removeEventListener('auth:logout',handleLogoutEvent);
-  },[])
+  useEffect(() => {
+    setAuthFailureHandler(logout);
+    return () => setAuthFailureHandler(null);
+  }, [logout]);
 
   // Session restoration on mount
   useEffect(()=>{
@@ -58,16 +54,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const checkExistingSession = async()=>{
       try {
-        // Attempt to refresh token from cookie
-        const data = await refreshToken();
-        if (isMounted) {
-          login(data.accessToken, data.user);
+        const existingToken = getAccessToken();
+
+        if (existingToken) {
+          try {
+            const me = await getCurrentUser();
+            if (isMounted && me?.user) {
+              setUser(me.user);
+              socket.connect();
+              return;
+            }
+          } catch {
+            // If access token is invalid/expired, continue to refresh flow.
+          }
+        }
+
+        const refreshed = await refreshToken();
+        if (isMounted && refreshed?.accessToken && refreshed?.user) {
+          login(refreshed.accessToken, refreshed.user);
+        } else if (isMounted) {
+          logout();
         }
       } catch (error:any) {
-        
         if (isMounted) {
-          clearAccessToken();
-          setUser(null);
+          logout();
         }
       } finally {
         if (isMounted) {

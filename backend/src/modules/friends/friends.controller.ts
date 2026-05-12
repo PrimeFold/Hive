@@ -25,6 +25,9 @@ export const sendFriendRequest = async (req: Request, res: Response) => {
   try {
     const senderId = (req as any).user.id;
     const { receiverId } = req.params;
+    if (!receiverId || typeof receiverId !== "string") {
+      return res.status(400).json({ success: false, message: "Receiver id is required" });
+    }
 
     if (senderId === receiverId) {
       return res.status(400).json({ success: false, message: "You cannot send a friend request to yourself" });
@@ -64,6 +67,9 @@ export const acceptFriendRequest = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
     const { friendshipId } = req.params;
+    if (!friendshipId || typeof friendshipId !== "string") {
+      return res.status(400).json({ success: false, message: "Friendship id is required" });
+    }
     const result = await updateFriendshipStatus(friendshipId, userId, "ACCEPTED");
     return res.status(result.statusCode || 500).json(result);
   } catch (error) {
@@ -76,6 +82,9 @@ export const rejectFriendRequest = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
     const { friendshipId } = req.params;
+    if (!friendshipId || typeof friendshipId !== "string") {
+      return res.status(400).json({ success: false, message: "Friendship id is required" });
+    }
     const result = await updateFriendshipStatus(friendshipId, userId, "REJECTED");
     return res.status(result.statusCode || 500).json(result);
   } catch (error) {
